@@ -1,4 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{templates/**,static/**,repetitor.db}"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",

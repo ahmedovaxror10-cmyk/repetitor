@@ -2,23 +2,52 @@ import functools
 import os
 import re
 import secrets
+import shutil
 import sqlite3
 import time
 import uuid
-from flask import Flask, request, redirect, render_template, session
+from flask import Flask, request, redirect, render_template, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "faqat-sinov-uchun-kalit")
+app.secret_key = os.environ.get("SECRET_KEY", "faqat-sinov-uchun-kalit-2026-repetitor")
 app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("PRODUCTION") == "1"
-DB = "/tmp/repetitor.db" if os.environ.get("VERCEL") else os.path.join(BASE, "repetitor.db")
-UPLOAD = "/tmp/uploads" if os.environ.get("VERCEL") else os.path.join(BASE, "static", "uploads")
-os.makedirs(UPLOAD, exist_ok=True)
+
+if os.environ.get("VERCEL"):
+    DB = "/tmp/repetitor.db"
+    src_db = os.path.join(BASE, "repetitor.db")
+    if os.path.exists(src_db) and not os.path.exists(DB):
+        try:
+            shutil.copy2(src_db, DB)
+        except Exception as e:
+            print("DB copy error:", e)
+
+    UPLOAD = "/tmp/uploads"
+    os.makedirs(UPLOAD, exist_ok=True)
+    src_uploads = os.path.join(BASE, "static", "uploads")
+    if os.path.exists(src_uploads):
+        for f in os.listdir(src_uploads):
+            src_f = os.path.join(src_uploads, f)
+            dst_f = os.path.join(UPLOAD, f)
+            if os.path.isfile(src_f) and not os.path.exists(dst_f):
+                try:
+                    shutil.copy2(src_f, dst_f)
+                except Exception:
+                    pass
+else:
+    DB = os.path.join(BASE, "repetitor.db")
+    UPLOAD = os.path.join(BASE, "static", "uploads")
+    os.makedirs(UPLOAD, exist_ok=True)
+
+
+@app.route("/static/uploads/<path:filename>")
+def serve_uploads(filename):
+    return send_from_directory(UPLOAD, filename)
 
 ADMINLAR = {
     x.strip().lower()

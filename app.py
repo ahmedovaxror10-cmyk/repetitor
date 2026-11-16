@@ -16,8 +16,8 @@ app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("PRODUCTION") == "1"
-DB = os.path.join(BASE, "repetitor.db")
-UPLOAD = os.path.join(BASE, "static", "uploads")
+DB = "/tmp/repetitor.db" if os.environ.get("VERCEL") else os.path.join(BASE, "repetitor.db")
+UPLOAD = "/tmp/uploads" if os.environ.get("VERCEL") else os.path.join(BASE, "static", "uploads")
 os.makedirs(UPLOAD, exist_ok=True)
 
 ADMINLAR = {

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('kurs_qosh') }} | KURS.TOP{% endblock %}
+{% block content %}
+
+<header>
+  <h1>{{ tr('kurs_qosh') }}</h1>
+  <p>{{ tr('qosh_p') }}</p>
+</header>
+
+<section class="add">
+  {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
+  <form method="post" action="/qosh" enctype="multipart/form-data">
+    <input name="ism" value="{{ user }}" placeholder="{{ tr('ph_ism') }}" required>
+    <input name="fan" placeholder="{{ tr('ph_fan') }}" required>
+    <input name="shahar" placeholder="{{ tr('ph_shahar') }}" required>
+    <input name="narx" placeholder="{{ tr('ph_narx') }}" required>
+    <input name="telefon" placeholder="{{ tr('ph_tel') }}" required>
+    <input name="telegram" placeholder="{{ tr('ph_tg') }}">
+    <textarea name="tavsif" rows="4" maxlength="600" placeholder="{{ tr('ph_tavsif_qosh') }}"></textarea>
+    <label class="chk"><input type="checkbox" name="bepul" value="1"> {{ tr('bepul_lbl') }}</label>
+    <label class="fayl">{{ tr('rasm_lbl') }}
+      <input type="file" name="rasm" accept="image/jpeg,image/png,image/webp">
+    </label>
+    <button>{{ tr('elon_joylash') }}</button>
+  </form>
+</section>
+
+{% endblock %}

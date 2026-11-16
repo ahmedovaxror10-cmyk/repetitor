@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Admin | KURS.TOP{% endblock %}
+{% block content %}
+
+<header>
+  <h1>Admin panel</h1>
+  <p>E'lonlar, sharhlar va foydalanuvchilarni boshqarish.</p>
+</header>
+
+{% if xabar %}<p class="xabar">{{ xabar }}</p>{% endif %}
+
+<div class="stat">
+  <div><b>{{ stat.users }}</b><span>Foydalanuvchi</span></div>
+  <div><b>{{ stat.tutors }}</b><span>E'lon</span></div>
+  <div><b>{{ stat.sharhlar }}</b><span>Sharh</span></div>
+</div>
+
+<section class="add">
+  <h2>E'lonlar (oxirgi 50 ta)</h2>
+  <div class="jadval">
+    <table>
+      <tr><th>Ism</th><th>Fan</th><th>Shahar</th><th>Narx</th><th></th></tr>
+      {% for t in tutors %}
+      <tr>
+        <td><a href="/repetitor/{{ t.id }}">{{ t.ism }}</a></td>
+        <td>{{ t.fan }}</td>
+        <td>{{ t.shahar }}</td>
+        <td>{{ '{:,}'.format(t.narx).replace(',', ' ') }}</td>
+        <td>
+          <form method="post" action="/admin/elon-ochir/{{ t.id }}" onsubmit="return confirm('E’lon o‘chirilsinmi?')">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <button class="link">O'chirish</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">E'lon yo'q</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</section>
+
+<section class="add">
+  <h2>Sharhlar (oxirgi 50 ta)</h2>
+  <div class="jadval">
+    <table>
+      <tr><th>Muallif</th><th>Repetitor</th><th>Baho</th><th>Matn</th><th></th></tr>
+      {% for s in sharhlar %}
+      <tr>
+        <td>{{ s.muallif }}</td>
+        <td>{{ s.repetitor }}</td>
+        <td><span class="yulduz">{{ '★' * s.baho }}</span></td>
+        <td>{{ (s.matn or '')[:80] }}</td>
+        <td>
+          <form method="post" action="/admin/sharh-ochir/{{ s.id }}" onsubmit="return confirm('Sharh o‘chirilsinmi?')">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <button class="link">O'chirish</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">Sharh yo'q</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</section>
+
+<section class="add">
+  <h2>Foydalanuvchilar (oxirgi 50 ta)</h2>
+  <div class="jadval">
+    <table>
+      <tr><th>Ism</th><th>Login</th><th>E'lonlar</th><th></th></tr>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.ism }}</td>
+        <td>{{ u.login }}</td>
+        <td>{{ u.elonlar }}</td>
+        <td>
+          {% if u.login in adminlar %}
+            <span class="shahar">Admin</span>
+          {% else %}
+          <form method="post" action="/admin/user-ochir/{{ u.id }}" onsubmit="return confirm('Foydalanuvchi va uning barcha e’lonlari o‘chiriladi. Davom etasizmi?')">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <button class="link">O'chirish</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</section>
+
+{% endblock %}

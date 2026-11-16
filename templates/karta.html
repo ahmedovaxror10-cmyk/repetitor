@@ -1,0 +1,52 @@
+<article class="row">
+  <div class="chap">
+    {% if t.rasm %}
+      <img class="avatar" src="/static/uploads/{{ t.rasm }}" alt="{{ t.ism }}">
+    {% else %}
+      <div class="avatar bosh-harf">{{ t.ism[:1] }}</div>
+    {% endif %}
+    <div>
+      <h2><a class="nomi" href="/repetitor/{{ t.id }}">{{ t.ism }}</a></h2>
+      <p class="fan">{{ t.fan }}</p>{% if t.bepul_dars %}<span class="bepul">{{ tr('bepul_dars') }}</span>{% endif %}
+      <p class="shahar">{{ t.shahar }}</p>
+
+      <p class="reyting">
+        {% if t.sharh_soni %}
+          <span class="yulduz">★</span> {{ t.reyting }} <span class="shahar">({{ tr('sharh_n', n=t.sharh_soni) }})</span>
+        {% else %}
+          <span class="shahar">{{ tr('hali_sharh_yoq') }}</span>
+        {% endif %}
+      </p>
+
+      {% if t.tavsif %}
+        <p class="qisqa">{{ t.tavsif[:110] }}{% if t.tavsif|length > 110 %}...{% endif %}</p>
+      {% endif %}
+
+      {% if t.telefon or t.telegram %}
+        {% if user %}
+          <div class="aloqalar">
+            {% if t.telefon %}
+              <a class="aloqa" href="tel:{{ t.telefon }}">{{ tr('qongiroq') }}: {{ t.telefon[:4] }} {{ t.telefon[4:6] }} {{ t.telefon[6:9] }} {{ t.telefon[9:11] }} {{ t.telefon[11:] }}</a>
+            {% endif %}
+            {% if t.telegram %}
+              <a class="aloqa tg" href="https://t.me/{{ t.telegram }}" target="_blank" rel="noopener">Telegram: @{{ t.telegram }}</a>
+            {% endif %}
+          </div>
+        {% else %}
+          <p class="shahar"><a href="/kirish">{{ tr('kiring') }}</a>{{ tr('aloqa_korish') }}</p>
+        {% endif %}
+      {% endif %}
+
+      {% if user_id and t.user_id == user_id %}
+      <p class="korish">👁 {{ tr('korish_n', n=t.korishlar or 0) }}</p>
+      <div class="amallar">
+        <a href="/tahrir/{{ t.id }}">{{ tr('tahrirlash') }}</a>
+        <form method="post" action="/ochir/{{ t.id }}" onsubmit='return confirm({{ tr("elon_ochirilsinmi")|tojson }})'>
+          <button class="link">{{ tr('ochirish') }}</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="narx">{{ '{:,}'.format(t.narx).replace(',', ' ') }} {{ tr('som') }}<small>{{ tr('soat') }}</small></div>
+</article>

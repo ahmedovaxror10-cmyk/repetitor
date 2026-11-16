@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('kabinet') }} | KURS.TOP{% endblock %}
+{% block content %}
+
+<header>
+  <h1>{{ tr('kabinet') }}</h1>
+  <p>{{ tr('kabinet_p', ism=user) }}</p>
+</header>
+
+<div class="stat">
+  <div><b>{{ stat.elon }} / {{ limit }}</b><span>{{ tr('elon') }}</span></div>
+  <div><b>{{ stat.korish }}</b><span>{{ tr('jami_korish') }}</span></div>
+  <div><b>{{ stat.sharh }}</b><span>{{ tr('olingan_sharh') }}</span></div>
+  <div><b>{{ stat.reyting if stat.reyting else '—' }}</b><span>{{ tr('ortacha_reyting') }}</span></div>
+</div>
+
+<section class="add">
+  <h2>{{ tr('mening_elonlarim') }}</h2>
+  {% if stat.elon < limit or admin %}
+    <p><a class="tugma" href="/qosh">{{ tr('yangi_elon') }}</a></p>
+  {% else %}
+    <p class="shahar">{{ tr('limit_yetdi', n=limit) }}</p>
+  {% endif %}
+</section>
+
+{% for t in tutors %}
+  {% include "karta.html" %}
+{% else %}
+  <div class="empty">{{ tr('elon_yoq') }}</div>
+{% endfor %}
+
+<section class="add">
+  <h2>{{ tr('yozgan_sharhlarim') }}</h2>
+  {% for s in yozgan %}
+  <div class="sharh">
+    <div class="sharh-bosh">
+      <a href="/repetitor/{{ s.tid }}">{{ s.repetitor }}</a>
+      <span class="yulduz">{{ '★' * s.baho }}</span><span class="bosh-yulduz">{{ '★' * (5 - s.baho) }}</span>
+    </div>
+    {% if s.matn %}<p>{{ s.matn }}</p>{% endif %}
+    <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})'>
+      <button class="link">{{ tr('ochirish') }}</button>
+    </form>
+  </div>
+  {% else %}
+  <p class="shahar">{{ tr('sharh_yozmagan') }}</p>
+  {% endfor %}
+</section>
+
+{% endblock %}

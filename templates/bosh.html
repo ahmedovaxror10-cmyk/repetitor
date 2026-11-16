@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<header>
+  <h1>KURS<mark>.TOP</mark></h1>
+  <p>Fan va shahar bo'yicha o'qituvchi toping yoki o'z kursingizni joylang.</p>
+  <div class="tugmalar">
+    <a class="tugma" href="/qidiruv">Qidirish</a>
+    <a class="tugma ikkinchi" href="/qosh">Kurs qo'shish</a>
+  </div>
+</header>
+
+<div class="bolim">
+  <h2>Yangi takliflar</h2>
+  <a href="/qidiruv">Hammasi</a>
+</div>
+
+{% for t in tutors %}
+  {% include "karta.html" %}
+{% else %}
+  <div class="empty">Hozircha takliflar yo'q. Birinchi bo'lib kurs qo'shing.</div>
+{% endfor %}
+
+{% endblock %}

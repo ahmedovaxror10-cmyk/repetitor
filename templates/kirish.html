@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kirish | KURS.TOP</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><a class="logo" href="/">KURS<mark>.TOP</mark></a></h1>
+  </header>
+  <section class="add">
+    <h2>Kirish</h2>
+    {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
+    <form method="post">
+      <input name="login" placeholder="Login" required>
+      <input name="parol" type="password" placeholder="Parol" required>
+      <button>Kirish</button>
+    </form>
+    <p>Hisobingiz yo'qmi? <a href="/royxat">Ro'yxatdan o'ting</a></p>
+  </section>
+</div>
+</body>
+</html>

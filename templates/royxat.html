@@ -1,0 +1,21 @@
+﻿{% extends "base.html" %}
+{% block title %}Ro'yxatdan o'tish | KURS.TOP{% endblock %}
+{% block content %}
+
+<header>
+  <h1>Ro'yxatdan o'tish</h1>
+  <p>Bepul hisob oching va kurslaringizni joylang.</p>
+</header>
+
+<section class="add">
+  {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
+  <form method="post">
+    <input name="ism" placeholder="Ismingiz" maxlength="60" required>
+    <input name="login" placeholder="Login: lotin harf, raqam, _ (masalan: dilnoza90)" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" required>
+    <input name="parol" type="password" placeholder="Parol (kamida 8 ta belgi)" minlength="8" maxlength="100" required>
+    <button>Ro'yxatdan o'tish</button>
+  </form>
+  <p>Hisobingiz bormi? <a href="/kirish">Kirish</a></p>
+</section>
+
+{% endblock %}

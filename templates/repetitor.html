@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ t.ism }} | KURS.TOP{% endblock %}
+{% block content %}
+
+<header class="profil-bosh">
+  {% if t.rasm %}
+    <img class="avatar katta" src="/static/uploads/{{ t.rasm }}" alt="{{ t.ism }}">
+  {% else %}
+    <div class="avatar katta bosh-harf">{{ t.ism[:1] }}</div>
+  {% endif %}
+  <div>
+    <h1>{{ t.ism }}</h1>
+    <p>{{ t.fan }}, {{ t.shahar }}</p>
+    {% if t.bepul_dars %}<span class="bepul">{{ tr('bepul_dars') }}</span>{% endif %}
+    {% if t.sharh_soni %}
+      <p class="reyting-bosh"><span class="yulduz">★</span> {{ t.reyting }} · {{ tr('sharh_n', n=t.sharh_soni) }}</p>
+    {% endif %}
+  </div>
+</header>
+
+<section class="add profil">
+  <div class="profil-narx">
+    {{ '{:,}'.format(t.narx).replace(',', ' ') }} {{ tr('som') }}
+    <small>{{ tr('soat') }}</small>
+  </div>
+
+  <h2>{{ tr('ozi_haqida') }}</h2>
+  {% if t.tavsif %}
+    <p class="tavsif">{{ t.tavsif }}</p>
+  {% else %}
+    <p class="shahar">{{ tr('tavsif_yoq') }}</p>
+  {% endif %}
+
+  {% if t.telefon or t.telegram %}
+    {% if user %}
+      <div class="aloqalar">
+        {% if t.telefon %}
+          <a class="aloqa" href="tel:{{ t.telefon }}">{{ tr('qongiroq') }}: {{ t.telefon[:4] }} {{ t.telefon[4:6] }} {{ t.telefon[6:9] }} {{ t.telefon[9:11] }} {{ t.telefon[11:] }}</a>
+        {% endif %}
+        {% if t.telegram %}
+          <a class="aloqa tg" href="https://t.me/{{ t.telegram }}" target="_blank" rel="noopener">Telegram: @{{ t.telegram }}</a>
+        {% endif %}
+      </div>
+    {% else %}
+      <p><a href="/kirish">{{ tr('kiring') }}</a>{{ tr('aloqa_korish') }}</p>
+    {% endif %}
+  {% endif %}
+
+  {% if user_id and t.user_id == user_id %}
+  <p class="korish">👁 {{ tr('korish_n', n=t.korishlar or 0) }}</p>
+  <div class="amallar">
+    <a href="/tahrir/{{ t.id }}">{{ tr('tahrirlash') }}</a>
+    <form method="post" action="/ochir/{{ t.id }}" onsubmit='return confirm({{ tr("elon_ochirilsinmi")|tojson }})'>
+      <button class="link">{{ tr('ochirish') }}</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <p><a href="/qidiruv">{{ tr('orqaga') }}</a></p>
+</section>
+
+<section class="add" id="sharhlar">
+  <h2>{{ tr('sharhlar') }}</h2>
+  {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
+
+  {% if not user %}
+    <p><a href="/kirish">{{ tr('kiring') }}</a> {{ tr('yoki') }} <a href="/royxat">{{ tr('royxat_oting') }}</a>{{ tr('sharh_uchun') }}</p>
+  {% elif user_id == t.user_id %}
+    <p class="shahar">{{ tr('oz_elon_sharh') }}</p>
+  {% else %}
+    <form method="post" action="/sharh/{{ t.id }}">
+      <select name="baho" required>
+        <option value="" disabled {% if not mening %}selected{% endif %}>{{ tr('baho_tanlang') }}</option>
+        {% for b in [5, 4, 3, 2, 1] %}
+        <option value="{{ b }}" {% if mening and mening.baho == b %}selected{% endif %}>{{ '★' * b }} ({{ b }})</option>
+        {% endfor %}
+      </select>
+      <textarea name="matn" rows="3" maxlength="500" placeholder="{{ tr('sharh_ph') }}">{{ mening.matn if mening and mening.matn else '' }}</textarea>
+      <button>{% if mening %}{{ tr('sharh_yangilash') }}{% else %}{{ tr('sharh_yozish') }}{% endif %}</button>
+    </form>
+  {% endif %}
+
+  {% for s in sharhlar %}
+  <div class="sharh">
+    <div class="sharh-bosh">
+      <strong>{{ s.muallif }}</strong>
+      <span class="yulduz">{{ '★' * s.baho }}</span><span class="bosh-yulduz">{{ '★' * (5 - s.baho) }}</span>
+    </div>
+    {% if s.matn %}<p>{{ s.matn }}</p>{% endif %}
+    {% if user_id and s.user_id == user_id %}
+    <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})'>
+      <button class="link">{{ tr('ochirish') }}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="shahar">{{ tr('birinchi_yozing') }}</p>
+  {% endfor %}
+</section>
+
+{% endblock %}

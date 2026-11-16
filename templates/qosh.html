@@ -13,6 +13,24 @@
       <div class="alert-danger">{{ xato }}</div>
     {% endif %}
 
+    {% if limit_yetdi %}
+      <div style="text-align: center; padding: 2.5rem 1rem;">
+        <div style="width: 56px; height: 56px; margin: 0 auto 1.25rem; background: var(--surface-secondary, rgba(0,0,0,0.04)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text);">E'lonlar chegarasi to'lgan</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 460px; margin: 0 auto 1.75rem; line-height: 1.5;">
+          Sizda allaqachon faol kurs e'loni mavjud. Platformada har bir foydalanuvchiga 1 ta kurs e'loni joylashtirish belgilangan.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="/kabinet" class="btn-primary">
+            <span>Kabinetimga o'tish</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/qidiruv" class="btn-ghost">Barcha kurslar</a>
+        </div>
+      </div>
+    {% else %}
     <form method="post" action="/qosh" enctype="multipart/form-data" class="form-standard">
       <div class="form-grid-2">
         <div class="form-group">
@@ -79,6 +97,7 @@
 
       <button type="submit" class="btn-primary btn-block-lg">{{ tr('elon_joylash') }}</button>
     </form>
+    {% endif %}
   </section>
 </div>
 

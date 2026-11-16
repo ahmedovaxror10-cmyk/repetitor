@@ -55,7 +55,7 @@ ADMINLAR = {
     if x.strip()
 }
 
-MAX_ELON = 5
+MAX_ELON = int(os.environ.get("MAX_ELON", 1))
 URINISH_LIMIT = 5
 URINISH_OYNA = 15 * 60
 
@@ -327,9 +327,9 @@ TR = {
         "Security check failed. Refresh the page and try again.",
     ),
     "limit_xato": (
-        "Bitta foydalanuvchi ko'pi bilan {n} ta e'lon qo'sha oladi. Eskisini o'chiring.",
-        "Один пользователь может добавить не более {n} объявлений. Удалите старое.",
-        "One user can add at most {n} listings. Delete an old one first.",
+        "Saytda har bir foydalanuvchiga faqat {n} ta kurs e'lonini joylashga ruxsat berilgan. Yangi e'lon qo'shish uchun avvalgisini tahrirlang yoki o'chiring.",
+        "На сайте разрешено размещать только {n} объявление на одного пользователя. Отредактируйте или удалите текущее.",
+        "Each user is allowed to post only {n} course listing. Please edit or delete your existing one.",
     ),
     "ism_xato": (
         "Ism 2 dan 80 gacha belgidan iborat bo'lsin",
@@ -798,6 +798,21 @@ def sharh_ochir(sid):
 def qosh():
     if "user_id" not in session:
         return redirect("/kirish")
+
+    con = db()
+    soni = con.execute(
+        "SELECT COUNT(*) FROM tutors WHERE user_id = ?", (session["user_id"],)
+    ).fetchone()[0]
+    con.close()
+
+    if soni >= MAX_ELON and not is_admin():
+        return render_template(
+            "qosh.html",
+            xato=tr("limit_xato", n=MAX_ELON),
+            limit_yetdi=True,
+            user=session.get("user", "")
+        )
+
     if request.method == "GET":
         return render_template("qosh.html", xato="")
     ism = request.form["ism"].strip()
@@ -817,13 +832,6 @@ def qosh():
     telegram = telegram_olish(request.form.get("telegram", ""))
     if telegram is None:
         return render_template("qosh.html", xato=tr("telegram_xato"))
-    con = db()
-    soni = con.execute(
-        "SELECT COUNT(*) FROM tutors WHERE user_id = ?", (session["user_id"],)
-    ).fetchone()[0]
-    con.close()
-    if soni >= MAX_ELON and not is_admin():
-        return render_template("qosh.html", xato=tr("limit_xato", n=MAX_ELON))
     rasm = None
     fayl = request.files.get("rasm")
     if fayl and fayl.filename:

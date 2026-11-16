@@ -1,101 +1,205 @@
 {% extends "base.html" %}
-{% block title %}{{ t.ism }} | KURS.TOP{% endblock %}
+{% block title %}{{ t.ism }} — {{ t.fan }} Repetitori | KURS.TOP{% endblock %}
 {% block content %}
 
-<header class="profil-bosh">
-  {% if t.rasm %}
-    <img class="avatar katta" src="/static/uploads/{{ t.rasm }}" alt="{{ t.ism }}">
-  {% else %}
-    <div class="avatar katta bosh-harf">{{ t.ism[:1] }}</div>
-  {% endif %}
-  <div>
-    <h1>{{ t.ism }}</h1>
-    <p>{{ t.fan }}, {{ t.shahar }}</p>
-    {% if t.bepul_dars %}<span class="bepul">{{ tr('bepul_dars') }}</span>{% endif %}
-    {% if t.sharh_soni %}
-      <p class="reyting-bosh"><span class="yulduz">★</span> {{ t.reyting }} · {{ tr('sharh_n', n=t.sharh_soni) }}</p>
-    {% endif %}
-  </div>
-</header>
+<div class="page-container profile-container">
+  <!-- BREADCRUMB -->
+  <nav class="breadcrumb">
+    <a href="/qidiruv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      {{ tr('orqaga') }}
+    </a>
+  </nav>
 
-<section class="add profil">
-  <div class="profil-narx">
-    {{ '{:,}'.format(t.narx).replace(',', ' ') }} {{ tr('som') }}
-    <small>{{ tr('soat') }}</small>
-  </div>
-
-  <h2>{{ tr('ozi_haqida') }}</h2>
-  {% if t.tavsif %}
-    <p class="tavsif">{{ t.tavsif }}</p>
-  {% else %}
-    <p class="shahar">{{ tr('tavsif_yoq') }}</p>
-  {% endif %}
-
-  {% if t.telefon or t.telegram %}
-    {% if user %}
-      <div class="aloqalar">
-        {% if t.telefon %}
-          <a class="aloqa" href="tel:{{ t.telefon }}">{{ tr('qongiroq') }}: {{ t.telefon[:4] }} {{ t.telefon[4:6] }} {{ t.telefon[6:9] }} {{ t.telefon[9:11] }} {{ t.telefon[11:] }}</a>
-        {% endif %}
-        {% if t.telegram %}
-          <a class="aloqa tg" href="https://t.me/{{ t.telegram }}" target="_blank" rel="noopener">Telegram: @{{ t.telegram }}</a>
+  <!-- PROFILE HERO CARD -->
+  <header class="profile-hero-card">
+    <div class="profile-hero-inner">
+      <div class="profile-avatar-large">
+        {% if t.rasm %}
+          <img src="/static/uploads/{{ t.rasm }}" alt="{{ t.ism }}">
+        {% else %}
+          <div class="profile-fallback-letter">{{ t.ism[:1]|upper }}</div>
         {% endif %}
       </div>
-    {% else %}
-      <p><a href="/kirish">{{ tr('kiring') }}</a>{{ tr('aloqa_korish') }}</p>
-    {% endif %}
-  {% endif %}
 
-  {% if user_id and t.user_id == user_id %}
-  <p class="korish">👁 {{ tr('korish_n', n=t.korishlar or 0) }}</p>
-  <div class="amallar">
-    <a href="/tahrir/{{ t.id }}">{{ tr('tahrirlash') }}</a>
-    <form method="post" action="/ochir/{{ t.id }}" onsubmit='return confirm({{ tr("elon_ochirilsinmi")|tojson }})'>
-      <button class="link">{{ tr('ochirish') }}</button>
-    </form>
-  </div>
-  {% endif %}
+      <div class="profile-details">
+        <div class="profile-title-row">
+          <h1 class="profile-name">{{ t.ism }}</h1>
+        </div>
 
-  <p><a href="/qidiruv">{{ tr('orqaga') }}</a></p>
-</section>
+        <div class="badges-row">
+          <span class="badge-subject">{{ t.fan }}</span>
+          <span class="badge-city">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            {{ t.shahar }}
+          </span>
+          {% if t.bepul_dars %}
+            <span class="badge-free">
+              <span class="free-dot"></span>
+              {{ tr('bepul_dars') }}
+            </span>
+          {% endif %}
+        </div>
 
-<section class="add" id="sharhlar">
-  <h2>{{ tr('sharhlar') }}</h2>
-  {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
+        {% if t.sharh_soni %}
+          <div class="rating-badge rating-large">
+            <span class="star-icon">★</span>
+            <span class="rating-val">{{ t.reyting }}</span>
+            <span class="rating-count">· {{ tr('sharh_n', n=t.sharh_soni) }}</span>
+          </div>
+        {% endif %}
+      </div>
 
-  {% if not user %}
-    <p><a href="/kirish">{{ tr('kiring') }}</a> {{ tr('yoki') }} <a href="/royxat">{{ tr('royxat_oting') }}</a>{{ tr('sharh_uchun') }}</p>
-  {% elif user_id == t.user_id %}
-    <p class="shahar">{{ tr('oz_elon_sharh') }}</p>
-  {% else %}
-    <form method="post" action="/sharh/{{ t.id }}">
-      <select name="baho" required>
-        <option value="" disabled {% if not mening %}selected{% endif %}>{{ tr('baho_tanlang') }}</option>
-        {% for b in [5, 4, 3, 2, 1] %}
-        <option value="{{ b }}" {% if mening and mening.baho == b %}selected{% endif %}>{{ '★' * b }} ({{ b }})</option>
-        {% endfor %}
-      </select>
-      <textarea name="matn" rows="3" maxlength="500" placeholder="{{ tr('sharh_ph') }}">{{ mening.matn if mening and mening.matn else '' }}</textarea>
-      <button>{% if mening %}{{ tr('sharh_yangilash') }}{% else %}{{ tr('sharh_yozish') }}{% endif %}</button>
-    </form>
-  {% endif %}
-
-  {% for s in sharhlar %}
-  <div class="sharh">
-    <div class="sharh-bosh">
-      <strong>{{ s.muallif }}</strong>
-      <span class="yulduz">{{ '★' * s.baho }}</span><span class="bosh-yulduz">{{ '★' * (5 - s.baho) }}</span>
+      <!-- PRICE CARD ON PROFILE -->
+      <div class="profile-price-box">
+        <span class="price-box-label">{{ tr('soat') }}</span>
+        <div class="price-box-amount">
+          {{ '{:,}'.format(t.narx).replace(',', ' ') }}
+          <span class="currency">{{ tr('som') }}</span>
+        </div>
+      </div>
     </div>
-    {% if s.matn %}<p>{{ s.matn }}</p>{% endif %}
-    {% if user_id and s.user_id == user_id %}
-    <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})'>
-      <button class="link">{{ tr('ochirish') }}</button>
-    </form>
+  </header>
+
+  <!-- MAIN INFO CARD -->
+  <section class="apple-surface-card">
+    <div class="surface-header">
+      <h2>{{ tr('ozi_haqida') }}</h2>
+    </div>
+    
+    <div class="profile-bio-text">
+      {% if t.tavsif %}
+        <p>{{ t.tavsif }}</p>
+      {% else %}
+        <p class="text-muted">{{ tr('tavsif_yoq') }}</p>
+      {% endif %}
+    </div>
+
+    <!-- CONTACT DETAILS -->
+    <div class="profile-contact-section">
+      <h3>Aloqa ma'lumotlari</h3>
+      {% if t.telefon or t.telegram %}
+        {% if user %}
+          <div class="contact-actions-row">
+            {% if t.telefon %}
+              <a class="btn-contact-lg btn-phone" href="tel:{{ t.telefon }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>{{ t.telefon[:4] }} {{ t.telefon[4:6] }} {{ t.telefon[6:9] }} {{ t.telefon[9:11] }} {{ t.telefon[11:] }}</span>
+              </a>
+            {% endif %}
+            {% if t.telegram %}
+              <a class="btn-contact-lg btn-tg" href="https://t.me/{{ t.telegram }}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                <span>Telegram: @{{ t.telegram }}</span>
+              </a>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="locked-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div>
+              <p>Aloqa ma'lumotlari faqat tizimga kirgan foydalanuvchilar uchun ochiq.</p>
+              <a href="/kirish" class="btn-primary-sm">{{ tr('kiring') }}</a>
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- OWNER MANAGEMENT ACTIONS -->
+    {% if user_id and t.user_id == user_id %}
+      <div class="owner-toolbar">
+        <span class="views-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          {{ tr('korish_n', n=t.korishlar or 0) }}
+        </span>
+        <div class="toolbar-actions">
+          <a href="/tahrir/{{ t.id }}" class="btn-pill btn-edit-full">{{ tr('tahrirlash') }}</a>
+          <form method="post" action="/ochir/{{ t.id }}" onsubmit='return confirm({{ tr("elon_ochirilsinmi")|tojson }})'>
+            <button class="btn-pill btn-delete-full" type="submit">{{ tr('ochirish') }}</button>
+          </form>
+        </div>
+      </div>
     {% endif %}
-  </div>
-  {% else %}
-  <p class="shahar">{{ tr('birinchi_yozing') }}</p>
-  {% endfor %}
-</section>
+  </section>
+
+  <!-- REVIEWS SECTION -->
+  <section class="apple-surface-card" id="sharhlar">
+    <div class="surface-header">
+      <h2>{{ tr('sharhlar') }}</h2>
+      {% if t.sharh_soni %}
+        <span class="count-chip">{{ tr('sharh_n', n=t.sharh_soni) }}</span>
+      {% endif %}
+    </div>
+
+    {% if xato %}<div class="alert-danger">{{ xato }}</div>{% endif %}
+
+    <!-- REVIEW FORM -->
+    <div class="review-compose-box">
+      {% if not user %}
+        <div class="callout-card">
+          <p><a href="/kirish" class="link-bold">{{ tr('kiring') }}</a> {{ tr('yoki') }} <a href="/royxat" class="link-bold">{{ tr('royxat_oting') }}</a>{{ tr('sharh_uchun') }}</p>
+        </div>
+      {% elif user_id == t.user_id %}
+        <p class="text-muted">{{ tr('oz_elon_sharh') }}</p>
+      {% else %}
+        <form method="post" action="/sharh/{{ t.id }}" class="form-standard">
+          <div class="form-group">
+            <label class="form-label">{{ tr('baho_tanlang') }}</label>
+            <div class="select-capsule">
+              <select name="baho" required>
+                <option value="" disabled {% if not mening %}selected{% endif %}>{{ tr('baho_tanlang') }}</option>
+                {% for b in [5, 4, 3, 2, 1] %}
+                <option value="{{ b }}" {% if mening and mening.baho == b %}selected{% endif %}>{{ '★' * b }} ({{ b }}/5)</option>
+                {% endfor %}
+              </select>
+              <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ tr('sharh_ph') }}</label>
+            <textarea name="matn" rows="3" maxlength="500" placeholder="{{ tr('sharh_ph') }}" class="input-standard">{{ mening.matn if mening and mening.matn else '' }}</textarea>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            {% if mening %}{{ tr('sharh_yangilash') }}{% else %}{{ tr('sharh_yozish') }}{% endif %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+
+    <!-- REVIEWS LIST -->
+    <div class="reviews-stack">
+      {% for s in sharhlar %}
+        <div class="review-item">
+          <div class="review-head">
+            <div class="review-author-avatar">{{ s.muallif[:1]|upper }}</div>
+            <div class="review-author-meta">
+              <span class="review-author-name">{{ s.muallif }}</span>
+              <div class="stars-row">
+                <span class="stars-active">{{ '★' * s.baho }}</span><span class="stars-empty">{{ '★' * (5 - s.baho) }}</span>
+              </div>
+            </div>
+            {% if user_id and s.user_id == user_id %}
+              <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})' class="review-delete-form">
+                <button class="btn-icon-delete" title="{{ tr('ochirish') }}" type="submit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </form>
+            {% endif %}
+          </div>
+          {% if s.matn %}
+            <p class="review-body">{{ s.matn }}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="empty-reviews">
+          <p>{{ tr('birinchi_yozing') }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
 
 {% endblock %}

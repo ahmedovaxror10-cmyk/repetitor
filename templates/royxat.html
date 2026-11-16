@@ -1,21 +1,44 @@
 ﻿{% extends "base.html" %}
-{% block title %}Ro'yxatdan o'tish | KURS.TOP{% endblock %}
+{% block title %}{{ tr('royxat') }} | KURS.TOP{% endblock %}
 {% block content %}
 
-<header>
-  <h1>Ro'yxatdan o'tish</h1>
-  <p>Bepul hisob oching va kurslaringizni joylang.</p>
-</header>
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      </div>
+      <h1 class="auth-title">{{ tr('royxat') }}</h1>
+      <p class="auth-subtitle">{{ tr('royxat_p') }}</p>
+    </div>
 
-<section class="add">
-  {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
-  <form method="post">
-    <input name="ism" placeholder="Ismingiz" maxlength="60" required>
-    <input name="login" placeholder="Login: lotin harf, raqam, _ (masalan: dilnoza90)" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" required>
-    <input name="parol" type="password" placeholder="Parol (kamida 8 ta belgi)" minlength="8" maxlength="100" required>
-    <button>Ro'yxatdan o'tish</button>
-  </form>
-  <p>Hisobingiz bormi? <a href="/kirish">Kirish</a></p>
-</section>
+    {% if xato %}
+      <div class="alert-danger">{{ xato }}</div>
+    {% endif %}
+
+    <form method="post" class="auth-form">
+      <div class="form-group">
+        <label class="form-label" for="ism">{{ tr('ph_ism') }}</label>
+        <input id="ism" name="ism" class="input-standard" placeholder="{{ tr('ph_ism') }}" maxlength="60" required autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="r_login">{{ tr('ph_login') }}</label>
+        <input id="r_login" name="login" class="input-standard" placeholder="{{ tr('ph_login_royxat') }}" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="r_parol">{{ tr('ph_parol') }}</label>
+        <input id="r_parol" name="parol" type="password" class="input-standard" placeholder="{{ tr('ph_parol_royxat') }}" minlength="8" maxlength="100" required autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="btn-primary btn-block">{{ tr('royxat') }}</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>{{ tr('hisob_bor') }} <a href="/kirish" class="link-bold">{{ tr('kirish') }}</a></p>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

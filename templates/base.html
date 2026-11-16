@@ -1,69 +1,120 @@
 {% set p = request.path %}
 <!DOCTYPE html>
-<html lang="{{ lang }}">
+<html lang="{{ lang }}" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{% block title %}KURS.TOP{% endblock %}</title>
+  <meta name="theme-color" content="#ffffff">
+  <title>{% block title %}KURS.TOP — Repetitorlar va Kurslar{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="wrap">
+<div class="ambient-glow" aria-hidden="true"></div>
 
-  <nav class="nav">
-    <a class="logo-mini" href="/">KURS<mark>.TOP</mark></a>
-    <div class="nav-links">
-      <a href="/qidiruv">{{ tr('qidiruv') }}</a>
-      <a href="/qosh">{{ tr('kurs_qosh') }}</a>
-      {% if user %}<a href="/kabinet">{{ tr('kabinet') }}</a>{% endif %}
-      {% if admin %}<a href="/admin">Admin</a>{% endif %}
-    </div>
-    {% if user %}
-      <span class="salom">{{ tr('salom', ism=user) }}</span>
-      <a href="/chiqish">{{ tr('chiqish') }}</a>
-    {% else %}
-      <span class="kirish-links">
-        <a href="/kirish">{{ tr('kirish') }}</a>
-        <a href="/royxat">{{ tr('royxat') }}</a>
+<!-- STICKY FROSTED NAVBAR -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/">
+      <span class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
       </span>
-    {% endif %}
-    <span class="til">
-      <a href="/til/uz?next={{ request.full_path|urlencode }}" {% if lang == 'uz' %}class="faol"{% endif %}>UZ</a>
-      <a href="/til/ru?next={{ request.full_path|urlencode }}" {% if lang == 'ru' %}class="faol"{% endif %}>RU</a>
-      <a href="/til/en?next={{ request.full_path|urlencode }}" {% if lang == 'en' %}class="faol"{% endif %}>EN</a>
-    </span>
-  </nav>
+      <span class="brand-text">KURS<span class="brand-accent">.TOP</span></span>
+    </a>
 
+    <nav class="desktop-nav">
+      <a href="/qidiruv" class="nav-item {% if p.startswith('/qidiruv') %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span>{{ tr('qidiruv') }}</span>
+      </a>
+      <a href="/qosh" class="nav-item {% if p.startswith('/qosh') %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+        <span>{{ tr('kurs_qosh') }}</span>
+      </a>
+      {% if user %}
+        <a href="/kabinet" class="nav-item {% if p.startswith('/kabinet') %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span>{{ tr('kabinet') }}</span>
+        </a>
+      {% endif %}
+      {% if admin %}
+        <a href="/admin" class="nav-item admin-badge {% if p.startswith('/admin') %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>
+          <span>Admin</span>
+        </a>
+      {% endif %}
+    </nav>
+
+    <div class="header-actions">
+      <!-- APPLE SEGMENTED LANGUAGE CONTROL -->
+      <div class="segmented-control" role="group" aria-label="Til tanlash">
+        <a href="/til/uz?next={{ request.full_path|urlencode }}" class="segment {% if lang == 'uz' %}active{% endif %}">UZ</a>
+        <a href="/til/ru?next={{ request.full_path|urlencode }}" class="segment {% if lang == 'ru' %}active{% endif %}">RU</a>
+        <a href="/til/en?next={{ request.full_path|urlencode }}" class="segment {% if lang == 'en' %}active{% endif %}">EN</a>
+      </div>
+
+      {% if user %}
+        <div class="user-pill">
+          <span class="user-greeting">{{ tr('salom', ism=user) }}</span>
+          <a href="/chiqish" class="btn-logout" title="{{ tr('chiqish') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </a>
+        </div>
+      {% else %}
+        <div class="auth-buttons">
+          <a href="/kirish" class="btn-ghost">{{ tr('kirish') }}</a>
+          <a href="/royxat" class="btn-primary-sm">{{ tr('royxat') }}</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
   {% block content %}{% endblock %}
+</main>
 
-</div>
-
-<nav class="pastki" aria-label="Menu">
-  <a href="/qidiruv" {% if p.startswith('/qidiruv') %}class="faol"{% endif %}>
+<!-- FLOATING APPLE-STYLE BOTTOM NAVIGATION (MOBILE) -->
+<nav class="pastki" aria-label="Pastki menyu">
+  <a href="/qidiruv" class="pastki-item {% if p.startswith('/qidiruv') %}faol{% endif %}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <span>{{ tr('qidiruv') }}</span>
   </a>
-  <a href="/qosh" {% if p.startswith('/qosh') %}class="faol"{% endif %}>
+  <a href="/qosh" class="pastki-item {% if p.startswith('/qosh') %}faol{% endif %}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
     <span>{{ tr('kurs_qosh') }}</span>
   </a>
   {% if user %}
-  <a href="/kabinet" {% if p.startswith('/kabinet') %}class="faol"{% endif %}>
+  <a href="/kabinet" class="pastki-item {% if p.startswith('/kabinet') %}faol{% endif %}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
     <span>{{ tr('kabinet') }}</span>
   </a>
   {% else %}
-  <a href="/kirish" {% if p.startswith('/kirish') or p.startswith('/royxat') %}class="faol"{% endif %}>
+  <a href="/kirish" class="pastki-item {% if p.startswith('/kirish') or p.startswith('/royxat') %}faol{% endif %}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5"/><path d="M15 12H4"/></svg>
     <span>{{ tr('kirish') }}</span>
   </a>
   {% endif %}
   {% if admin %}
-  <a href="/admin" {% if p.startswith('/admin') %}class="faol"{% endif %}>
+  <a href="/admin" class="pastki-item {% if p.startswith('/admin') %}faol{% endif %}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>
     <span>Admin</span>
   </a>
   {% endif %}
 </nav>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>© 2026 KURS.TOP — Repetitorlar va talabalar uchun professional platforma.</p>
+    <div class="footer-links">
+      <a href="/qidiruv">{{ tr('qidiruv') }}</a>
+      <a href="/qosh">{{ tr('kurs_qosh') }}</a>
+      <a href="/kirish">{{ tr('kirish') }}</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

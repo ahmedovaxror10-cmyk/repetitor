@@ -2,49 +2,111 @@
 {% block title %}{{ tr('kabinet') }} | KURS.TOP{% endblock %}
 {% block content %}
 
-<header>
-  <h1>{{ tr('kabinet') }}</h1>
-  <p>{{ tr('kabinet_p', ism=user) }}</p>
-</header>
-
-<div class="stat">
-  <div><b>{{ stat.elon }} / {{ limit }}</b><span>{{ tr('elon') }}</span></div>
-  <div><b>{{ stat.korish }}</b><span>{{ tr('jami_korish') }}</span></div>
-  <div><b>{{ stat.sharh }}</b><span>{{ tr('olingan_sharh') }}</span></div>
-  <div><b>{{ stat.reyting if stat.reyting else '—' }}</b><span>{{ tr('ortacha_reyting') }}</span></div>
-</div>
-
-<section class="add">
-  <h2>{{ tr('mening_elonlarim') }}</h2>
-  {% if stat.elon < limit or admin %}
-    <p><a class="tugma" href="/qosh">{{ tr('yangi_elon') }}</a></p>
-  {% else %}
-    <p class="shahar">{{ tr('limit_yetdi', n=limit) }}</p>
-  {% endif %}
-</section>
-
-{% for t in tutors %}
-  {% include "karta.html" %}
-{% else %}
-  <div class="empty">{{ tr('elon_yoq') }}</div>
-{% endfor %}
-
-<section class="add">
-  <h2>{{ tr('yozgan_sharhlarim') }}</h2>
-  {% for s in yozgan %}
-  <div class="sharh">
-    <div class="sharh-bosh">
-      <a href="/repetitor/{{ s.tid }}">{{ s.repetitor }}</a>
-      <span class="yulduz">{{ '★' * s.baho }}</span><span class="bosh-yulduz">{{ '★' * (5 - s.baho) }}</span>
+<div class="page-container">
+  <div class="page-header kabinet-header">
+    <div>
+      <h1 class="page-title">{{ tr('kabinet') }}</h1>
+      <p class="page-subtitle">{{ tr('kabinet_p', ism=user) }}</p>
     </div>
-    {% if s.matn %}<p>{{ s.matn }}</p>{% endif %}
-    <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})'>
-      <button class="link">{{ tr('ochirish') }}</button>
-    </form>
+    {% if stat.elon < limit or admin %}
+      <a class="btn-primary" href="/qosh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>{{ tr('yangi_elon') }}</span>
+      </a>
+    {% endif %}
   </div>
-  {% else %}
-  <p class="shahar">{{ tr('sharh_yozmagan') }}</p>
-  {% endfor %}
-</section>
+
+  <!-- APPLE-STYLE METRIC TILES -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-label">{{ tr('elon') }}</span>
+      <div class="metric-value">{{ stat.elon }} <span class="metric-sub">/ {{ limit }}</span></div>
+      <span class="metric-desc">Faol kurslaringiz</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">{{ tr('jami_korish') }}</span>
+      <div class="metric-value">{{ stat.korish }}</div>
+      <span class="metric-desc">Barcha e'lonlar ko'rilishi</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">{{ tr('olingan_sharh') }}</span>
+      <div class="metric-value">{{ stat.sharh }}</div>
+      <span class="metric-desc">Talabalar fikrlari</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">{{ tr('ortacha_reyting') }}</span>
+      <div class="metric-value metric-gold">
+        {% if stat.reyting %}
+          ★ {{ stat.reyting }}
+        {% else %}
+          —
+        {% endif %}
+      </div>
+      <span class="metric-desc">Umumiy obro' darajasi</span>
+    </div>
+  </div>
+
+  <!-- MY LISTINGS -->
+  <section class="section-block">
+    <div class="section-header">
+      <h2 class="section-title">{{ tr('mening_elonlarim') }}</h2>
+    </div>
+
+    <div class="cards-stack">
+      {% for t in tutors %}
+        {% include "karta.html" %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          </div>
+          <h3>{{ tr('elon_yoq') }}</h3>
+          <p>O'z kursingizni qo'shing va o'quvchilar qidiruvida paydo bo'ling.</p>
+          <a class="btn-primary" href="/qosh">{{ tr('yangi_elon') }}</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- MY SUBMITTED REVIEWS -->
+  <section class="apple-surface-card section-margin-top">
+    <div class="surface-header">
+      <h2>{{ tr('yozgan_sharhlarim') }}</h2>
+    </div>
+
+    <div class="reviews-stack">
+      {% for s in yozgan %}
+        <div class="review-item">
+          <div class="review-head">
+            <div class="review-author-meta">
+              <a href="/repetitor/{{ s.tid }}" class="link-bold review-tutor-link">
+                {{ s.repetitor }}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <div class="stars-row">
+                <span class="stars-active">{{ '★' * s.baho }}</span><span class="stars-empty">{{ '★' * (5 - s.baho) }}</span>
+              </div>
+            </div>
+            <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})'>
+              <button class="btn-icon-delete" title="{{ tr('ochirish') }}" type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </form>
+          </div>
+          {% if s.matn %}
+            <p class="review-body">{{ s.matn }}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="empty-reviews">
+          <p>{{ tr('sharh_yozmagan') }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
 
 {% endblock %}

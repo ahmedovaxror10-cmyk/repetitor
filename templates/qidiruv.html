@@ -1,49 +1,91 @@
 {% extends "base.html" %}
-{% block title %}Qidiruv | KURS.TOP{% endblock %}
+{% block title %}{{ tr('qidiruv') }} | KURS.TOP{% endblock %}
 {% block content %}
 
-<header>
-  <h1>Qidiruv</h1>
-  <p>Ism, fan yoki shahar bo'yicha toping.</p>
-</header>
-
-<form class="search" action="/qidiruv" method="get">
-  <input name="q" value="{{ q }}" placeholder="Masalan: IELTS yoki Toshkent">
-  <button>Qidirish</button>
-
-  <div class="filtr">
-    <label>Fan
-      <select name="fan" onchange="this.form.submit()">
-        <option value="">Barcha fanlar</option>
-        {% for f in fanlar %}
-        <option value="{{ f }}" {% if f|lower == fan|lower %}selected{% endif %}>{{ f }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>Shahar
-      <select name="shahar" onchange="this.form.submit()">
-        <option value="">Barcha shaharlar</option>
-        {% for s in shaharlar %}
-        <option value="{{ s }}" {% if s|lower == shahar|lower %}selected{% endif %}>{{ s }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>Tartib
-      <select name="tartib" onchange="this.form.submit()">
-        {% for k, v in tartiblar.items() %}
-        <option value="{{ k }}" {% if k == tartib %}selected{% endif %}>{{ v[0] }}</option>
-        {% endfor %}
-      </select>
-    </label>
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">{{ tr('qidiruv') }}</h1>
+    <p class="page-subtitle">{{ tr('qid_p') }}</p>
   </div>
-</form>
 
-<p class="count">{{ tutors|length }} ta natija topildi</p>
+  <!-- CONTROL CENTER SEARCH & FILTER BAR -->
+  <form class="filter-panel" action="/qidiruv" method="get">
+    <div class="search-primary-box">
+      <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+      </svg>
+      <input type="text" name="q" value="{{ q }}" placeholder="{{ tr('qid_ph') }}" autocomplete="off">
+      <button type="submit" class="btn-primary-sm">{{ tr('qidirish') }}</button>
+    </div>
 
-{% for t in tutors %}
-  {% include "karta.html" %}
-{% else %}
-  <div class="empty">Hech narsa topilmadi. Filtrni o'zgartiring yoki <a href="/qidiruv">hammasini ko'ring</a>.</div>
-{% endfor %}
+    <div class="filters-row">
+      <!-- FAN FILTER -->
+      <div class="filter-select-wrap">
+        <label for="fan-select" class="filter-label">{{ tr('fan') }}</label>
+        <div class="select-capsule">
+          <select id="fan-select" name="fan" onchange="this.form.submit()">
+            <option value="">{{ tr('barcha_fanlar') }}</option>
+            {% for f in fanlar %}
+            <option value="{{ f }}" {% if f|lower == fan|lower %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+          </select>
+          <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- SHAHAR FILTER -->
+      <div class="filter-select-wrap">
+        <label for="shahar-select" class="filter-label">{{ tr('shahar') }}</label>
+        <div class="select-capsule">
+          <select id="shahar-select" name="shahar" onchange="this.form.submit()">
+            <option value="">{{ tr('barcha_shaharlar') }}</option>
+            {% for s in shaharlar %}
+            <option value="{{ s }}" {% if s|lower == shahar|lower %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+          <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- TARTIB FILTER -->
+      <div class="filter-select-wrap">
+        <label for="tartib-select" class="filter-label">{{ tr('tartib') }}</label>
+        <div class="select-capsule">
+          <select id="tartib-select" name="tartib" onchange="this.form.submit()">
+            {% for k in tartiblar %}
+            <option value="{{ k }}" {% if k == tartib %}selected{% endif %}>{{ tr('tartib_' + k) }}</option>
+            {% endfor %}
+          </select>
+          <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="results-meta">
+    <span class="results-badge">
+      <span class="badge-dot-blue"></span>
+      {{ tr('natija_n', n=tutors|length) }}
+    </span>
+    {% if q or fan or shahar %}
+      <a href="/qidiruv" class="clear-filters-link">Filtrlarni tozalash ✕</a>
+    {% endif %}
+  </div>
+
+  <div class="cards-stack">
+    {% for t in tutors %}
+      {% include "karta.html" %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h3>{{ tr('hech_narsa') }}</h3>
+        <p>Qidiruv so'zini yoki tanlangan filtrlarni o'zgartirib ko'ring.</p>
+        <a class="btn-primary" href="/qidiruv">{{ tr('hammasini_korish')|capitalize }}</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
 
 {% endblock %}

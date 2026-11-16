@@ -1,52 +1,116 @@
-<article class="row">
-  <div class="chap">
-    {% if t.rasm %}
-      <img class="avatar" src="/static/uploads/{{ t.rasm }}" alt="{{ t.ism }}">
-    {% else %}
-      <div class="avatar bosh-harf">{{ t.ism[:1] }}</div>
-    {% endif %}
-    <div>
-      <h2><a class="nomi" href="/repetitor/{{ t.id }}">{{ t.ism }}</a></h2>
-      <p class="fan">{{ t.fan }}</p>{% if t.bepul_dars %}<span class="bepul">{{ tr('bepul_dars') }}</span>{% endif %}
-      <p class="shahar">{{ t.shahar }}</p>
+<article class="apple-card">
+  <div class="card-main">
+    <!-- AVATAR SQUIRCLE -->
+    <a href="/repetitor/{{ t.id }}" class="avatar-wrap" aria-label="{{ t.ism }}">
+      {% if t.rasm %}
+        <img class="avatar-img" src="/static/uploads/{{ t.rasm }}" alt="{{ t.ism }}" loading="lazy">
+      {% else %}
+        <div class="avatar-fallback">{{ t.ism[:1]|upper }}</div>
+      {% endif %}
+      {% if t.bepul_dars %}
+        <span class="avatar-status-dot" title="{{ tr('bepul_dars') }}"></span>
+      {% endif %}
+    </a>
 
-      <p class="reyting">
-        {% if t.sharh_soni %}
-          <span class="yulduz">★</span> {{ t.reyting }} <span class="shahar">({{ tr('sharh_n', n=t.sharh_soni) }})</span>
-        {% else %}
-          <span class="shahar">{{ tr('hali_sharh_yoq') }}</span>
+    <!-- CARD INFO -->
+    <div class="card-body">
+      <div class="card-header-line">
+        <h3 class="tutor-name">
+          <a href="/repetitor/{{ t.id }}">{{ t.ism }}</a>
+        </h3>
+        
+        <!-- MOBILE PRICE -->
+        <div class="price-pill-mobile">
+          <span class="price-num">{{ '{:,}'.format(t.narx).replace(',', ' ') }}</span>
+          <span class="price-cur">{{ tr('som') }}</span>
+        </div>
+      </div>
+
+      <!-- BADGES ROW -->
+      <div class="badges-row">
+        <span class="badge-subject">{{ t.fan }}</span>
+
+        <span class="badge-city">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ t.shahar }}
+        </span>
+
+        {% if t.bepul_dars %}
+          <span class="badge-free">
+            <span class="free-dot"></span>
+            {{ tr('bepul_dars') }}
+          </span>
         {% endif %}
-      </p>
 
+        <!-- RATING PILL -->
+        <div class="rating-badge">
+          {% if t.sharh_soni %}
+            <span class="star-icon">★</span>
+            <span class="rating-val">{{ t.reyting }}</span>
+            <span class="rating-count">({{ tr('sharh_n', n=t.sharh_soni) }})</span>
+          {% else %}
+            <span class="no-rating">{{ tr('hali_sharh_yoq') }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- SHORT DESCRIPTION -->
       {% if t.tavsif %}
-        <p class="qisqa">{{ t.tavsif[:110] }}{% if t.tavsif|length > 110 %}...{% endif %}</p>
+        <p class="tutor-bio">{{ t.tavsif[:130] }}{% if t.tavsif|length > 130 %}...{% endif %}</p>
       {% endif %}
 
+      <!-- CONTACT BUTTONS -->
       {% if t.telefon or t.telegram %}
-        {% if user %}
-          <div class="aloqalar">
+        <div class="card-contacts">
+          {% if user %}
             {% if t.telefon %}
-              <a class="aloqa" href="tel:{{ t.telefon }}">{{ tr('qongiroq') }}: {{ t.telefon[:4] }} {{ t.telefon[4:6] }} {{ t.telefon[6:9] }} {{ t.telefon[9:11] }} {{ t.telefon[11:] }}</a>
+              <a class="btn-contact btn-phone" href="tel:{{ t.telefon }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>{{ t.telefon[:4] }} {{ t.telefon[4:6] }} {{ t.telefon[6:9] }} {{ t.telefon[9:11] }} {{ t.telefon[11:] }}</span>
+              </a>
             {% endif %}
             {% if t.telegram %}
-              <a class="aloqa tg" href="https://t.me/{{ t.telegram }}" target="_blank" rel="noopener">Telegram: @{{ t.telegram }}</a>
+              <a class="btn-contact btn-tg" href="https://t.me/{{ t.telegram }}" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                <span>Telegram</span>
+              </a>
             {% endif %}
-          </div>
-        {% else %}
-          <p class="shahar"><a href="/kirish">{{ tr('kiring') }}</a>{{ tr('aloqa_korish') }}</p>
-        {% endif %}
+          {% else %}
+            <a href="/kirish" class="btn-contact btn-locked">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>{{ tr('kiring') }}{{ tr('aloqa_korish') }}</span>
+            </a>
+          {% endif %}
+        </div>
       {% endif %}
 
+      <!-- OWNER ACTIONS -->
       {% if user_id and t.user_id == user_id %}
-      <p class="korish">👁 {{ tr('korish_n', n=t.korishlar or 0) }}</p>
-      <div class="amallar">
-        <a href="/tahrir/{{ t.id }}">{{ tr('tahrirlash') }}</a>
-        <form method="post" action="/ochir/{{ t.id }}" onsubmit='return confirm({{ tr("elon_ochirilsinmi")|tojson }})'>
-          <button class="link">{{ tr('ochirish') }}</button>
-        </form>
-      </div>
+        <div class="owner-bar">
+          <span class="views-count">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            {{ tr('korish_n', n=t.korishlar or 0) }}
+          </span>
+          <div class="owner-buttons">
+            <a class="btn-mini btn-edit" href="/tahrir/{{ t.id }}">{{ tr('tahrirlash') }}</a>
+            <form method="post" action="/ochir/{{ t.id }}" onsubmit='return confirm({{ tr("elon_ochirilsinmi")|tojson }})'>
+              <button class="btn-mini btn-delete" type="submit">{{ tr('ochirish') }}</button>
+            </form>
+          </div>
+        </div>
       {% endif %}
     </div>
   </div>
-  <div class="narx">{{ '{:,}'.format(t.narx).replace(',', ' ') }} {{ tr('som') }}<small>{{ tr('soat') }}</small></div>
+
+  <!-- DESKTOP PRICE COLUMN -->
+  <div class="card-side">
+    <div class="price-container">
+      <div class="price-amount">{{ '{:,}'.format(t.narx).replace(',', ' ') }} <span class="currency">{{ tr('som') }}</span></div>
+      <div class="price-label">{{ tr('soat') }} dars uchun</div>
+    </div>
+    <a href="/repetitor/{{ t.id }}" class="btn-view-details">
+      <span>Batafsil</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </a>
+  </div>
 </article>

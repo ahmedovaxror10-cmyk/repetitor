@@ -1,24 +1,109 @@
 {% extends "base.html" %}
 {% block content %}
 
-<header>
-  <h1>KURS<mark>.TOP</mark></h1>
-  <p>Fan va shahar bo'yicha o'qituvchi toping yoki o'z kursingizni joylang.</p>
-  <div class="tugmalar">
-    <a class="tugma" href="/qidiruv">Qidirish</a>
-    <a class="tugma ikkinchi" href="/qosh">Kurs qo'shish</a>
+<!-- APPLE-STYLE HERO SECTION -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-pulse"></span>
+      <span class="badge-text">✨ {{ tr('bosh_p') }}</span>
+    </div>
+
+    <h1 class="hero-title">
+      Bilim olishning eng oson va <span class="gradient-text">ishonchli yo'li</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Maktab fanlari, chet tillari, IELTS va IT yo'nalishlarida tajribali repetitorlar bilan individual shug'ullaning.
+    </p>
+
+    <!-- NAMETHATUI HERO SEARCH CAPSULE -->
+    <form class="hero-search-box" action="/qidiruv" method="get">
+      <div class="search-input-group">
+        <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <input type="text" name="q" placeholder="{{ tr('qid_ph') }}" autocomplete="off">
+      </div>
+      <button type="submit" class="hero-search-btn">
+        <span>{{ tr('qidirish') }}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </form>
+
+    <!-- INTERACTIVE CATEGORY CHIPS -->
+    <div class="quick-category-chips">
+      <span class="chips-label">Ommabop:</span>
+      <a href="/qidiruv?q=Ingliz+tili" class="chip">🇬🇧 Ingliz tili</a>
+      <a href="/qidiruv?q=Matematika" class="chip">📐 Matematika</a>
+      <a href="/qidiruv?q=IELTS" class="chip">🎯 IELTS</a>
+      <a href="/qidiruv?q=Dasturlash" class="chip">💻 Dasturlash</a>
+      <a href="/qidiruv?q=Fizika" class="chip">⚡ Fizika</a>
+      <a href="/qidiruv?q=Rus+tili" class="chip">🇷🇺 Rus tili</a>
+    </div>
   </div>
-</header>
 
-<div class="bolim">
-  <h2>Yangi takliflar</h2>
-  <a href="/qidiruv">Hammasi</a>
-</div>
+  <!-- HIGHLIGHT TILES -->
+  <div class="hero-features-grid">
+    <div class="feature-card">
+      <div class="feature-icon icon-emerald">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="feature-text">
+        <h3>{{ tr('bepul_dars') }}</h3>
+        <p>Ko'plab o'qituvchilarda dastlabki sinov darsi mutlaqo bepul.</p>
+      </div>
+    </div>
 
-{% for t in tutors %}
-  {% include "karta.html" %}
-{% else %}
-  <div class="empty">Hozircha takliflar yo'q. Birinchi bo'lib kurs qo'shing.</div>
-{% endfor %}
+    <div class="feature-card">
+      <div class="feature-icon icon-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="feature-text">
+        <h3>Haqiqiy reyting va sharhlar</h3>
+        <p>Faqat o'qigan talabalar tomonidan baholangan shaffof tizim.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon icon-purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="feature-text">
+        <h3>Vositachisiz to'g'ridan-to'g'ri aloqa</h3>
+        <p>Telefon yoki Telegram orqali repetitor bilan bevosita bog'laning.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TUTORS LIST SECTION -->
+<section class="tutors-section">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">{{ tr('yangi_takliflar') }}</h2>
+      <p class="section-sub">O'z sohasining iqtidorli mutaxassislari ro'yxati</p>
+    </div>
+    <a href="/qidiruv" class="link-arrow">
+      <span>{{ tr('hammasi') }}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <div class="cards-stack">
+    {% for t in tutors %}
+      {% include "karta.html" %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <h3>{{ tr('takliflar_yoq') }}</h3>
+        <p>Birinchi bo'lib o'z kursingizni qo'shing va o'quvchilarga ega bo'ling.</p>
+        <a class="btn-primary" href="/qosh">{{ tr('kurs_qosh') }}</a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
 
 {% endblock %}

@@ -2,27 +2,84 @@
 {% block title %}{{ tr('kurs_qosh') }} | KURS.TOP{% endblock %}
 {% block content %}
 
-<header>
-  <h1>{{ tr('kurs_qosh') }}</h1>
-  <p>{{ tr('qosh_p') }}</p>
-</header>
+<div class="page-container form-container">
+  <div class="page-header">
+    <h1 class="page-title">{{ tr('kurs_qosh') }}</h1>
+    <p class="page-subtitle">{{ tr('qosh_p') }}</p>
+  </div>
 
-<section class="add">
-  {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
-  <form method="post" action="/qosh" enctype="multipart/form-data">
-    <input name="ism" value="{{ user }}" placeholder="{{ tr('ph_ism') }}" required>
-    <input name="fan" placeholder="{{ tr('ph_fan') }}" required>
-    <input name="shahar" placeholder="{{ tr('ph_shahar') }}" required>
-    <input name="narx" placeholder="{{ tr('ph_narx') }}" required>
-    <input name="telefon" placeholder="{{ tr('ph_tel') }}" required>
-    <input name="telegram" placeholder="{{ tr('ph_tg') }}">
-    <textarea name="tavsif" rows="4" maxlength="600" placeholder="{{ tr('ph_tavsif_qosh') }}"></textarea>
-    <label class="chk"><input type="checkbox" name="bepul" value="1"> {{ tr('bepul_lbl') }}</label>
-    <label class="fayl">{{ tr('rasm_lbl') }}
-      <input type="file" name="rasm" accept="image/jpeg,image/png,image/webp">
-    </label>
-    <button>{{ tr('elon_joylash') }}</button>
-  </form>
-</section>
+  <section class="apple-surface-card">
+    {% if xato %}
+      <div class="alert-danger">{{ xato }}</div>
+    {% endif %}
+
+    <form method="post" action="/qosh" enctype="multipart/form-data" class="form-standard">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="ism">{{ tr('ph_ism') }} <span class="req">*</span></label>
+          <input id="ism" name="ism" value="{{ user }}" class="input-standard" placeholder="{{ tr('ph_ism') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fan">{{ tr('ph_fan') }} <span class="req">*</span></label>
+          <input id="fan" name="fan" class="input-standard" placeholder="{{ tr('ph_fan') }}" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="shahar">{{ tr('ph_shahar') }} <span class="req">*</span></label>
+          <input id="shahar" name="shahar" class="input-standard" placeholder="{{ tr('ph_shahar') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="narx">{{ tr('ph_narx') }} <span class="req">*</span></label>
+          <input id="narx" name="narx" class="input-standard" placeholder="80000" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="telefon">{{ tr('ph_tel') }} <span class="req">*</span></label>
+          <input id="telefon" name="telefon" class="input-standard" placeholder="90 123 45 67" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="telegram">{{ tr('ph_tg') }}</label>
+          <input id="telegram" name="telegram" class="input-standard" placeholder="@username">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="tavsif">{{ tr('ph_tavsif_qosh') }}</label>
+        <textarea id="tavsif" name="tavsif" rows="4" maxlength="600" class="input-standard" placeholder="{{ tr('ph_tavsif_qosh') }}"></textarea>
+      </div>
+
+      <!-- FREE LESSON TOGGLE -->
+      <div class="toggle-card">
+        <label class="switch-control">
+          <input type="checkbox" name="bepul" value="1">
+          <span class="switch-slider"></span>
+        </label>
+        <div class="toggle-text">
+          <strong>{{ tr('bepul_dars') }}</strong>
+          <span>{{ tr('bepul_lbl') }}</span>
+        </div>
+      </div>
+
+      <!-- PHOTO UPLOAD -->
+      <div class="form-group">
+        <label class="form-label">{{ tr('rasm_lbl') }}</label>
+        <div class="file-upload-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span class="file-prompt">Surat tanlang (JPG, PNG yoki WEBP, 3 MB gacha)</span>
+          <input type="file" name="rasm" accept="image/jpeg,image/png,image/webp" class="file-input-native">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary btn-block-lg">{{ tr('elon_joylash') }}</button>
+    </form>
+  </section>
+</div>
 
 {% endblock %}

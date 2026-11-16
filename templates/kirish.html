@@ -1,26 +1,39 @@
-﻿<!DOCTYPE html>
-<html lang="uz">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kirish | KURS.TOP</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <h1><a class="logo" href="/">KURS<mark>.TOP</mark></a></h1>
-  </header>
-  <section class="add">
-    <h2>Kirish</h2>
-    {% if xato %}<p class="xato">{{ xato }}</p>{% endif %}
-    <form method="post">
-      <input name="login" placeholder="Login" required>
-      <input name="parol" type="password" placeholder="Parol" required>
-      <button>Kirish</button>
+﻿{% extends "base.html" %}
+{% block title %}{{ tr('kirish') }} | KURS.TOP{% endblock %}
+{% block content %}
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5"/><path d="M15 12H4"/></svg>
+      </div>
+      <h1 class="auth-title">{{ tr('kirish') }}</h1>
+      <p class="auth-subtitle">{{ tr('kirish_p') }}</p>
+    </div>
+
+    {% if xato %}
+      <div class="alert-danger">{{ xato }}</div>
+    {% endif %}
+
+    <form method="post" class="auth-form">
+      <div class="form-group">
+        <label class="form-label" for="login">{{ tr('ph_login') }}</label>
+        <input id="login" name="login" class="input-standard" placeholder="{{ tr('ph_login') }}" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="parol">{{ tr('ph_parol') }}</label>
+        <input id="parol" name="parol" type="password" class="input-standard" placeholder="{{ tr('ph_parol') }}" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn-primary btn-block">{{ tr('kirish') }}</button>
     </form>
-    <p>Hisobingiz yo'qmi? <a href="/royxat">Ro'yxatdan o'ting</a></p>
-  </section>
+
+    <div class="auth-footer">
+      <p>{{ tr('hisob_yoq') }} <a href="/royxat" class="link-bold">{{ tr('royxat_cap') }}</a></p>
+    </div>
+  </div>
 </div>
-</body>
-</html>
+
+{% endblock %}

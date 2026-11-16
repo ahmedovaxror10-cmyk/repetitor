@@ -2,18 +2,34 @@
 {% block title %}Admin Panel | KURS.TOP{% endblock %}
 {% block content %}
 
-<div class="page-container">
-  <div class="page-header">
-    <div class="admin-title-badge">ADMINISTRATION</div>
-    <h1 class="page-title">Admin boshqaruv paneli</h1>
-    <p class="page-subtitle">Platformadagi barcha e'lonlar, sharhlar va foydalanuvchilar monitoringi.</p>
+<div class="page-container admin-container">
+  <!-- ADMIN HEADER -->
+  <div class="admin-header-card">
+    <div class="admin-header-left">
+      <div class="admin-badge-pill">
+        <span class="badge-dot-purple"></span>
+        ADMINISTRATION CONSOLE
+      </div>
+      <h1 class="page-title">Admin Boshqaruv Markazi</h1>
+      <p class="page-subtitle">Platformadagi barcha e'lonlar, sharhlar va foydalanuvchilarni to'liq nazorat qilish.</p>
+    </div>
+    <div class="admin-profile-pill">
+      <div class="admin-avatar">A</div>
+      <div class="admin-info">
+        <strong>{{ user }}</strong>
+        <span>Bosh Admin</span>
+      </div>
+    </div>
   </div>
 
   {% if xabar %}
-    <div class="alert-success">{{ xabar }}</div>
+    <div class="alert-success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>{{ xabar }}</span>
+    </div>
   {% endif %}
 
-  <!-- METRICS -->
+  <!-- METRIC TILES -->
   <div class="metrics-grid">
     <div class="metric-card">
       <span class="metric-label">Foydalanuvchilar</span>
@@ -30,89 +46,204 @@
     <div class="metric-card">
       <span class="metric-label">Sharhlar</span>
       <div class="metric-value">{{ stat.sharhlar }}</div>
-      <span class="metric-desc">Talabalar fikrlari</span>
+      <span class="metric-desc">O'quvchilar fikrlari</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">Tizim holati</span>
+      <div class="metric-value metric-status-ok">
+        <span class="status-live-dot"></span> Faol
+      </div>
+      <span class="metric-desc">Barcha modullar barqaror</span>
     </div>
   </div>
 
-  <!-- TUTORS TABLE -->
-  <section class="apple-surface-card section-margin-top">
-    <div class="surface-header">
-      <h2>E'lonlar ro'yxati (oxirgi 50 ta)</h2>
-    </div>
+  <!-- NAVIGATION TABS -->
+  <div class="admin-tabs" role="tablist">
+    <button type="button" class="admin-tab active" onclick="switchAdminTab('elonlar', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <span>E'lonlar ({{ tutors|length }})</span>
+    </button>
+    <button type="button" class="admin-tab" onclick="switchAdminTab('sharhlar', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Sharhlar ({{ sharhlar|length }})</span>
+    </button>
+    <button type="button" class="admin-tab" onclick="switchAdminTab('users', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Foydalanuvchilar ({{ users|length }})</span>
+    </button>
+  </div>
 
-    <div class="table-responsive">
-      <table class="apple-table">
-        <thead>
-          <tr>
-            <th>Ism / O'qituvchi</th>
-            <th>Fan</th>
-            <th>Shahar</th>
-            <th>Narx (so'm)</th>
-            <th class="text-right">Amal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in tutors %}
-          <tr>
-            <td>
-              <a href="/repetitor/{{ t.id }}" class="link-bold">{{ t.ism }}</a>
-            </td>
-            <td><span class="badge-subject">{{ t.fan }}</span></td>
-            <td>{{ t.shahar }}</td>
-            <td class="font-tabular font-bold">{{ '{:,}'.format(t.narx).replace(',', ' ') }}</td>
-            <td class="text-right">
-              <form method="post" action="/admin/elon-ochir/{{ t.id }}" onsubmit="return confirm('E’lon o‘chirilsinmi?')" class="inline-form">
-                <input type="hidden" name="csrf" value="{{ csrf }}">
-                <button type="submit" class="btn-table-delete">O'chirish</button>
-              </form>
-            </td>
-          </tr>
-          {% else %}
-          <tr><td colspan="5" class="text-center text-muted py-4">Hozircha e'lonlar mavjud emas</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
+  <!-- TAB 1: E'LONLAR -->
+  <div id="tab-elonlar" class="admin-tab-content active">
+    <section class="apple-surface-card">
+      <div class="surface-header">
+        <div>
+          <h2>E'lonlar boshqaruvi</h2>
+          <p class="text-muted text-sm">Oxirgi 50 ta repetitorlik kursi</p>
+        </div>
+      </div>
 
-  <!-- REVIEWS TABLE -->
-  <section class="apple-surface-card section-margin-top">
-    <div class="surface-header">
-      <h2>Sharhlar (oxirgi 50 ta)</h2>
-    </div>
+      <div class="table-responsive">
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>O'qituvchi</th>
+              <th>Fan</th>
+              <th>Shahar</th>
+              <th>Narx</th>
+              <th class="text-right">Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tutors %}
+            <tr>
+              <td class="font-tabular text-muted">#{{ t.id }}</td>
+              <td>
+                <a href="/repetitor/{{ t.id }}" class="link-bold">{{ t.ism }}</a>
+              </td>
+              <td><span class="badge-subject">{{ t.fan }}</span></td>
+              <td>
+                <span class="badge-city">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {{ t.shahar }}
+                </span>
+              </td>
+              <td class="font-tabular font-bold">{{ '{:,}'.format(t.narx).replace(',', ' ') }} <span class="text-xs text-muted">so'm</span></td>
+              <td class="text-right">
+                <div class="table-actions-inline">
+                  <a href="/repetitor/{{ t.id }}" class="btn-table-view">Ko'rish</a>
+                  <form method="post" action="/admin/elon-ochir/{{ t.id }}" onsubmit="return confirm('Bu e\'lonni o\'chirishni tasdiqlaysizmi?')" class="inline-form">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button type="submit" class="btn-table-delete">O'chirish</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">E'lonlar mavjud emas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 
-    <div class="table-responsive">
-      <table class="apple-table">
-        <thead>
-          <tr>
-            <th>Muallif</th>
-            <th>Repetitor</th>
-            <th>Baho</th>
-            <th>Matn</th>
-            <th class="text-right">Amal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for s in sharhlar %}
-          <tr>
-            <td class="font-semibold">{{ s.muallif }}</td>
-            <td><a href="/repetitor/{{ s.tutor_id }}" class="link-bold">{{ s.repetitor }}</a></td>
-            <td><span class="star-rating-pill">★ {{ s.baho }}</span></td>
-            <td class="text-secondary font-sm">{{ s.matn or '—' }}</td>
-            <td class="text-right">
-              <form method="post" action="/admin/sharh-ochir/{{ s.id }}" onsubmit="return confirm('Sharh o‘chirilsinmi?')" class="inline-form">
-                <input type="hidden" name="csrf" value="{{ csrf }}">
-                <button type="submit" class="btn-table-delete">O'chirish</button>
-              </form>
-            </td>
-          </tr>
-          {% else %}
-          <tr><td colspan="5" class="text-center text-muted py-4">Sharhlar mavjud emas</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
+  <!-- TAB 2: SHARHLAR -->
+  <div id="tab-sharhlar" class="admin-tab-content">
+    <section class="apple-surface-card">
+      <div class="surface-header">
+        <div>
+          <h2>Sharhlar va Fikr-mulohazalar</h2>
+          <p class="text-muted text-sm">O'quvchilar tomonidan yozilgan fikrlar</p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Muallif</th>
+              <th>Repetitor</th>
+              <th>Baho</th>
+              <th>Sharh matni</th>
+              <th class="text-right">Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sharhlar %}
+            <tr>
+              <td class="font-tabular text-muted">#{{ s.id }}</td>
+              <td class="font-semibold">{{ s.muallif }}</td>
+              <td><a href="/repetitor/{{ s.tutor_id }}" class="link-bold">{{ s.repetitor }}</a></td>
+              <td><span class="star-rating-pill">★ {{ s.baho }}</span></td>
+              <td class="text-secondary font-sm max-w-text">{{ s.matn or '—' }}</td>
+              <td class="text-right">
+                <form method="post" action="/admin/sharh-ochir/{{ s.id }}" onsubmit="return confirm('Bu sharhni o\'chirishni tasdiqlaysizmi?')" class="inline-form">
+                  <input type="hidden" name="csrf" value="{{ csrf }}">
+                  <button type="submit" class="btn-table-delete">O'chirish</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">Sharhlar mavjud emas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB 3: FOYDALANUVCHILAR -->
+  <div id="tab-users" class="admin-tab-content">
+    <section class="apple-surface-card">
+      <div class="surface-header">
+        <div>
+          <h2>Foydalanuvchilar hisoblari</h2>
+          <p class="text-muted text-sm">Ro'yxatdan o'tgan foydalanuvchilar ro'yxati</p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ism</th>
+              <th>Login</th>
+              <th>Kurslar soni</th>
+              <th>Roli</th>
+              <th class="text-right">Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td class="font-tabular text-muted">#{{ u.id }}</td>
+              <td class="font-semibold">{{ u.ism }}</td>
+              <td class="font-tabular">{{ u.login }}</td>
+              <td>
+                <span class="badge-count">{{ u.elonlar }} ta e'lon</span>
+              </td>
+              <td>
+                {% if u.login in adminlar %}
+                  <span class="role-badge role-admin">Administrator</span>
+                {% else %}
+                  <span class="role-badge role-user">Foydalanuvchi</span>
+                {% endif %}
+              </td>
+              <td class="text-right">
+                {% if u.login not in adminlar %}
+                  <form method="post" action="/admin/user-ochir/{{ u.id }}" onsubmit="return confirm('DIQQAT! Foydalanuvchi va uning barcha e\'lonlari o\'chiriladi. Tasdiqlaysizmi?')" class="inline-form">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button type="submit" class="btn-table-delete">O'chirish</button>
+                  </form>
+                {% else %}
+                  <span class="text-xs text-muted">Boshqaruvchi</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">Foydalanuvchilar topilmadi</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </div>
+
+<script>
+function switchAdminTab(tabName, btn) {
+  document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+  
+  const target = document.getElementById('tab-' + tabName);
+  if (target) target.classList.add('active');
+  btn.classList.add('active');
+}
+</script>
 
 {% endblock %}

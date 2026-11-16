@@ -138,28 +138,32 @@ a:hover {
 }
 
 /* ==========================================================================
-   NAVIGATION — Apple Frosted Glass Header
+   NAVIGATION — Apple Floating Glass Pill Header
    ========================================================================== */
 .site-header {
   position: sticky;
-  top: 0;
-  z-index: 100;
-  width: 100%;
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--border-light);
+  top: 14px;
+  z-index: 1000;
+  width: calc(100% - 32px);
+  max-width: 980px;
+  margin: 12px auto 0;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  border-radius: var(--radius-pill);
   transition: all var(--trans-base);
 }
 
 .header-inner {
-  max-width: 980px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 12px 20px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
 }
 
 /* Brand Logo */
@@ -1487,6 +1491,202 @@ a:hover {
 }
 .inline-form { display: inline-block; margin: 0; }
 
+/* Admin Dashboard Enhancements */
+.admin-container {
+  max-width: 960px;
+}
+.admin-header-card {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: 26px 30px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.admin-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-purple);
+  background: var(--accent-purple-tint);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 10px;
+}
+.badge-dot-purple {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-purple);
+}
+.admin-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--canvas-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 6px 18px 6px 6px;
+  flex-shrink: 0;
+}
+.admin-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-purple), #6366f1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.admin-info {
+  display: flex;
+  flex-direction: column;
+}
+.admin-info strong {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+.admin-info span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.metric-status-ok {
+  color: var(--accent-emerald);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.status-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  animation: pulseGreen 2s infinite;
+}
+
+/* Admin Tabs */
+.admin-tabs {
+  display: inline-flex;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.admin-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 9px 20px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+.admin-tab svg { width: 16px; height: 16px; }
+.admin-tab:hover {
+  color: var(--text-primary);
+}
+.admin-tab.active {
+  background: var(--apple-blue);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+}
+
+.admin-tab-content {
+  display: none;
+  animation: cardEnter 0.35s var(--ease-spring);
+}
+.admin-tab-content.active {
+  display: block;
+}
+
+.table-actions-inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.btn-table-view {
+  background: var(--canvas-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--trans-fast);
+}
+.btn-table-view:hover {
+  background: var(--apple-blue-tint);
+  color: var(--apple-blue);
+  border-color: rgba(0, 113, 227, 0.3);
+}
+
+.role-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.role-admin {
+  background: var(--accent-purple-tint);
+  color: var(--accent-purple);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+.role-user {
+  background: var(--canvas-subtle);
+  color: var(--text-muted);
+}
+.badge-count {
+  display: inline-flex;
+  background: var(--canvas-subtle);
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.star-rating-pill {
+  display: inline-flex;
+  padding: 3px 8px;
+  background: var(--accent-gold-tint);
+  color: #b45309;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+}
+.max-w-text {
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.4;
+}
+
 /* ==========================================================================
    FORMS & INPUTS — Apple Clean
    ========================================================================== */
@@ -1779,6 +1979,14 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+  .site-header {
+    top: 8px;
+    width: calc(100% - 20px);
+    margin: 8px auto 0;
+  }
+  .header-inner {
+    padding: 8px 12px;
+  }
   .desktop-nav, .user-greeting {
     display: none;
   }

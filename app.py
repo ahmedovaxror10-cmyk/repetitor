@@ -10,6 +10,7 @@ from flask import Flask, request, redirect, render_template, session, send_from_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+STATIC_VERSION = "20261118-v3"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "faqat-sinov-uchun-kalit-2026-repetitor")
@@ -454,6 +455,15 @@ def init_db():
         con.execute("ALTER TABLE tutors ADD COLUMN bepul_dars INTEGER DEFAULT 0")
     if "korishlar" not in ustunlar:
         con.execute("ALTER TABLE tutors ADD COLUMN korishlar INTEGER DEFAULT 0")
+
+    # Bosh admin hisobi mavjudligini kafolatlash
+    admin_bor = con.execute("SELECT id FROM users WHERE login = 'admin'").fetchone()
+    if not admin_bor:
+        con.execute(
+            "INSERT INTO users (ism, login, parol_hash) VALUES (?, ?, ?)",
+            ("Bosh Admin", "admin", generate_password_hash("Admin@2026")),
+        )
+
     if con.execute("SELECT COUNT(*) FROM tutors").fetchone()[0] == 0:
         con.executemany(
             "INSERT INTO tutors (ism, fan, shahar, narx, tavsif) VALUES (?, ?, ?, ?, ?)",
@@ -472,8 +482,8 @@ def init_db():
 
 def narx_olish(matn):
     try:
-        n = int(matn.replace(" ", ""))
-    except ValueError:
+        n = int(str(matn).replace(" ", ""))
+    except (ValueError, AttributeError):
         return None
     if n < 10000 or n > 5000000:
         return None
@@ -604,15 +614,21 @@ def javob_qayta_ishlash(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "same-origin"
-    if resp.mimetype == "text/html" and not resp.direct_passthrough:
-        html = resp.get_data(as_text=True)
-        belgi = '<input type="hidden" name="csrf" value="%s">' % csrf_token()
-        html = re.sub(
-            r'(<form\s+method="post"[^>]*>)',
-            lambda m: m.group(1) + belgi,
-            html,
-        )
-        resp.set_data(html)
+    if resp.mimetype == "text/html":
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+        if not resp.direct_passthrough:
+            html = resp.get_data(as_text=True)
+            belgi = '<input type="hidden" name="csrf" value="%s">' % csrf_token()
+            html = re.sub(
+                r'(<form\s+method="post"[^>]*>)',
+                lambda m: m.group(1) + belgi,
+                html,
+            )
+            resp.set_data(html)
+    elif request.path.startswith("/static/"):
+        resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     return resp
 
 
@@ -630,6 +646,7 @@ def umumiy():
         csrf=csrf_token(),
         tr=tr,
         lang=joriy_til(),
+        static_version=STATIC_VERSION,
     )
 
 
@@ -640,7 +657,9 @@ def til(kod):
     ort = request.args.get("next", "/")
     if not ort.startswith("/") or ort.startswith("//") or "\\" in ort:
         ort = "/"
-    return redirect(ort)
+    if ort.endswith("?"):
+        ort = ort[:-1]
+    return redirect(ort or "/")
 
 
 @app.route("/")
@@ -779,16 +798,17 @@ def sharh_ochir(sid):
     if "user_id" not in session:
         return redirect("/kirish")
     con = db()
-    s = con.execute(
-        "SELECT tutor_id FROM sharhlar WHERE id = ? AND user_id = ?",
-        (sid, session["user_id"]),
-    ).fetchone()
+    if is_admin():
+        s = con.execute("SELECT tutor_id FROM sharhlar WHERE id = ?", (sid,)).fetchone()
+    else:
+        s = con.execute(
+            "SELECT tutor_id FROM sharhlar WHERE id = ? AND user_id = ?",
+            (sid, session["user_id"]),
+        ).fetchone()
     if s is None:
         con.close()
         return redirect("/qidiruv")
-    con.execute(
-        "DELETE FROM sharhlar WHERE id = ? AND user_id = ?", (sid, session["user_id"])
-    )
+    con.execute("DELETE FROM sharhlar WHERE id = ?", (sid,))
     con.commit()
     con.close()
     return redirect("/repetitor/" + str(s["tutor_id"]) + "#sharhlar")
@@ -810,7 +830,6 @@ def qosh():
             "qosh.html",
             xato=tr("limit_xato", n=MAX_ELON),
             limit_yetdi=True,
-            user=session.get("user", "")
         )
 
     if request.method == "GET":
@@ -889,7 +908,7 @@ def kirish():
     if urinish_soni(con, login) >= URINISH_LIMIT:
         con.commit()
         con.close()
-        return render_template("kirish.html", xato=tr("k_urinish")), 429
+        return render_template("kirish.html", xato=tr("k_urinish"), login=login), 429
     u = con.execute("SELECT * FROM users WHERE login = ?", (login,)).fetchone()
     if u is None or not check_password_hash(u["parol_hash"], parol):
         con.execute(
@@ -897,7 +916,7 @@ def kirish():
         )
         con.commit()
         con.close()
-        return render_template("kirish.html", xato=tr("k_xato"))
+        return render_template("kirish.html", xato=tr("k_xato"), login=login)
     con.execute("DELETE FROM urinishlar WHERE kalit = ?", (login,))
     con.commit()
     con.close()
@@ -947,9 +966,12 @@ def tahrir(tid):
     if "user_id" not in session:
         return redirect("/kirish")
     con = db()
-    t = con.execute(
-        "SELECT * FROM tutors WHERE id = ? AND user_id = ?", (tid, session["user_id"])
-    ).fetchone()
+    if is_admin():
+        t = con.execute("SELECT * FROM tutors WHERE id = ?", (tid,)).fetchone()
+    else:
+        t = con.execute(
+            "SELECT * FROM tutors WHERE id = ? AND user_id = ?", (tid, session["user_id"])
+        ).fetchone()
     if t is None:
         con.close()
         return redirect("/qidiruv")
@@ -986,11 +1008,18 @@ def tahrir(tid):
             return render_template("tahrir.html", t=t, xato=tr("rasm_xato"))
         rasm_ochirish(rasm)
         rasm = yangi
-    con.execute(
-        "UPDATE tutors SET ism = ?, fan = ?, shahar = ?, narx = ?, telefon = ?, telegram = ?, "
-        "tavsif = ?, rasm = ?, bepul_dars = ? WHERE id = ? AND user_id = ?",
-        (ism, fan, shahar, narx, telefon, telegram, tavsif, rasm, bepul, tid, session["user_id"]),
-    )
+    if is_admin():
+        con.execute(
+            "UPDATE tutors SET ism = ?, fan = ?, shahar = ?, narx = ?, telefon = ?, telegram = ?, "
+            "tavsif = ?, rasm = ?, bepul_dars = ? WHERE id = ?",
+            (ism, fan, shahar, narx, telefon, telegram, tavsif, rasm, bepul, tid),
+        )
+    else:
+        con.execute(
+            "UPDATE tutors SET ism = ?, fan = ?, shahar = ?, narx = ?, telefon = ?, telegram = ?, "
+            "tavsif = ?, rasm = ?, bepul_dars = ? WHERE id = ? AND user_id = ?",
+            (ism, fan, shahar, narx, telefon, telegram, tavsif, rasm, bepul, tid, session["user_id"]),
+        )
     con.commit()
     con.close()
     return redirect("/repetitor/" + str(tid))
@@ -1001,9 +1030,12 @@ def ochir(tid):
     if "user_id" not in session:
         return redirect("/kirish")
     con = db()
-    t = con.execute(
-        "SELECT id FROM tutors WHERE id = ? AND user_id = ?", (tid, session["user_id"])
-    ).fetchone()
+    if is_admin():
+        t = con.execute("SELECT id FROM tutors WHERE id = ?", (tid,)).fetchone()
+    else:
+        t = con.execute(
+            "SELECT id FROM tutors WHERE id = ? AND user_id = ?", (tid, session["user_id"])
+        ).fetchone()
     if t:
         elon_ochirish(con, tid)
         con.commit()

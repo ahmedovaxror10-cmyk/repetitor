@@ -107,7 +107,7 @@
     </div>
 
     <!-- OWNER MANAGEMENT ACTIONS -->
-    {% if user_id and t.user_id == user_id %}
+    {% if user_id and (t.user_id == user_id or admin) %}
       <div class="owner-toolbar">
         <span class="views-pill">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -181,7 +181,7 @@
                 <span class="stars-active">{{ '★' * s.baho }}</span><span class="stars-empty">{{ '★' * (5 - s.baho) }}</span>
               </div>
             </div>
-            {% if user_id and s.user_id == user_id %}
+            {% if user_id and (s.user_id == user_id or admin) %}
               <form method="post" action="/sharh-ochir/{{ s.id }}" onsubmit='return confirm({{ tr("sharh_ochirilsinmi")|tojson }})' class="review-delete-form">
                 <button class="btn-icon-delete" title="{{ tr('ochirish') }}" type="submit">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>

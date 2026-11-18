@@ -8,8 +8,8 @@
   <title>{% block title %}KURS.TOP — Repetitorlar va Kurslar{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ static_version }}">
 </head>
 <body>
 <div class="ambient-glow" aria-hidden="true"></div>
@@ -64,8 +64,8 @@
         </div>
       {% else %}
         <div class="auth-buttons">
-          <a href="/kirish" class="btn-ghost">{{ tr('kirish') }}</a>
-          <a href="/royxat" class="btn-primary-sm">{{ tr('royxat') }}</a>
+          <a href="/kirish" class="btn-ghost btn-auth-login">{{ tr('kirish') }}</a>
+          <a href="/royxat" class="btn-primary-sm btn-auth-signup">{{ tr('royxat') }}</a>
         </div>
       {% endif %}
     </div>

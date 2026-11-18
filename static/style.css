@@ -76,6 +76,9 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -86,6 +89,8 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Ambient glow in background */
@@ -94,9 +99,10 @@ body {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 100vw;
-  max-width: 1400px;
+  width: 100%;
+  max-width: 1200px;
   height: 600px;
+  overflow: hidden;
   background:
     radial-gradient(900px 380px at 50% -80px, rgba(0, 113, 227, 0.07), transparent 70%),
     radial-gradient(700px 320px at 80% -40px, rgba(139, 92, 246, 0.05), transparent 60%),
@@ -242,13 +248,17 @@ a:hover {
 /* NameThatUI Segmented Control (Apple iOS style) */
 .segmented-control {
   display: inline-flex;
-  background: var(--canvas-subtle);
-  border: 1px solid var(--border-light);
+  position: relative;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: var(--radius-pill);
-  padding: 3px;
+  padding: 2.5px;
   gap: 2px;
+  box-sizing: border-box;
 }
 .segment {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
   font-size: 0.72rem;
   font-weight: 600;
@@ -257,15 +267,18 @@ a:hover {
   border-radius: var(--radius-pill);
   color: var(--text-muted);
   text-decoration: none;
-  transition: all var(--trans-fast);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 .segment:hover {
   color: var(--text-primary);
 }
 .segment.active {
   background: #ffffff;
-  color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  color: var(--apple-blue);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transform: translateY(-0.5px);
 }
 
 /* User & Auth Pill */
@@ -695,25 +708,26 @@ a:hover {
 .avatar-img, .avatar-fallback {
   width: 76px;
   height: 76px;
-  border-radius: var(--radius-md);
+  border-radius: 18px;
   object-fit: cover;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
-  transition: transform var(--trans-fast);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(15, 23, 42, 0.05);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .avatar-wrap:hover .avatar-img,
 .avatar-wrap:hover .avatar-fallback {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .avatar-fallback {
-  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
   color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.75rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .avatar-status-dot {
@@ -725,6 +739,7 @@ a:hover {
   border-radius: 50%;
   background: var(--accent-emerald);
   border: 3px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* Card Body */
@@ -768,10 +783,11 @@ a:hover {
 }
 
 .badge-subject {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--apple-blue);
   background: var(--apple-blue-tint);
+  border: 1px solid rgba(0, 113, 227, 0.14);
   border-radius: var(--radius-pill);
   padding: 3px 10px;
 }
@@ -780,11 +796,15 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 0.74rem;
+  color: var(--text-secondary);
   font-weight: 500;
+  background: var(--canvas-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
 }
-.badge-city svg { width: 14px; height: 14px; }
+.badge-city svg { width: 13px; height: 13px; }
 
 .badge-free {
   display: inline-flex;
@@ -792,9 +812,9 @@ a:hover {
   gap: 5px;
   font-size: 0.74rem;
   font-weight: 600;
-  color: #065f46;
+  color: #047857;
   background: var(--accent-emerald-tint);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.28);
   border-radius: var(--radius-pill);
   padding: 3px 9px;
 }
@@ -809,13 +829,17 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  background: #fffbeb;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
 }
 .star-icon { color: var(--accent-gold); font-size: 0.95rem; }
 .rating-val { color: var(--text-primary); }
-.rating-count { color: var(--text-muted); font-size: 0.76rem; font-weight: 500; }
-.no-rating { color: var(--text-tertiary); font-size: 0.76rem; font-weight: 500; }
+.rating-count { color: var(--text-muted); font-size: 0.74rem; font-weight: 500; }
+.no-rating { color: var(--text-tertiary); font-size: 0.74rem; font-weight: 500; }
 
 .tutor-bio {
   font-size: 0.88rem;
@@ -1086,12 +1110,16 @@ a:hover {
   color: var(--text-primary);
   cursor: pointer;
   outline: none;
-  transition: all var(--trans-fast);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.select-capsule select:hover {
+  background: #ffffff;
+  border-color: rgba(0, 113, 227, 0.35);
 }
 .select-capsule select:focus {
   background: #ffffff;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.14);
 }
 .select-chevron {
   position: absolute;
@@ -1100,6 +1128,11 @@ a:hover {
   height: 16px;
   color: var(--text-muted);
   pointer-events: none;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s ease;
+}
+.select-capsule:focus-within .select-chevron {
+  transform: rotate(180deg);
+  color: var(--apple-blue);
 }
 
 .results-meta {
@@ -1979,20 +2012,54 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+  }
+
   .site-header {
     top: 8px;
     width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
     margin: 8px auto 0;
+    box-sizing: border-box;
   }
   .header-inner {
-    padding: 8px 12px;
+    padding: 6px 12px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: hidden;
   }
-  .desktop-nav, .user-greeting {
-    display: none;
+  .desktop-nav, .user-greeting, .btn-auth-signup {
+    display: none !important;
+  }
+  .btn-auth-login {
+    padding: 6px 13px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    background: var(--apple-blue);
+    color: #ffffff;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-auth-login:hover {
+    background: var(--apple-blue-hover);
+    color: #ffffff;
+  }
+  .header-actions {
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .wrap {
+    padding-left: 14px;
+    padding-right: 14px;
     padding-bottom: 120px;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .hero-features-grid {
@@ -2025,7 +2092,9 @@ a:hover {
   .apple-card {
     flex-direction: column;
     align-items: stretch;
-    padding: 18px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    gap: 14px;
   }
   .card-side {
     display: none; /* Desktop side hidden on mobile */
@@ -2035,6 +2104,7 @@ a:hover {
     align-items: baseline;
     gap: 4px;
     background: var(--canvas-subtle);
+    border: 1px solid var(--border-light);
     padding: 4px 10px;
     border-radius: var(--radius-pill);
   }
@@ -2042,58 +2112,131 @@ a:hover {
     font-family: var(--font-display);
     font-size: 1.05rem;
     font-weight: 800;
-    color: var(--text-primary);
+    color: var(--apple-blue);
   }
   .price-pill-mobile .price-cur {
     font-size: 0.72rem;
     font-weight: 600;
     color: var(--text-muted);
   }
+  .card-contacts {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .btn-contact {
+    flex: 1 1 130px;
+    justify-content: center;
+    text-align: center;
+  }
 
-  /* NameThatUI Floating iOS 18 Tab Bar */
+  /* NameThatUI Floating iOS 18 Tab Bar — Rock-Solid Center & Zero Overflow */
   .pastki {
     display: flex;
     position: fixed;
-    bottom: 18px;
-    left: 16px;
-    right: 16px;
-    max-width: 400px;
-    margin: 0 auto;
+    bottom: max(12px, env(safe-area-inset-bottom, 12px));
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 420px;
+    margin: 0;
+    box-sizing: border-box;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.04);
     border-radius: var(--radius-pill);
-    padding: 6px;
-    justify-content: space-around;
+    padding: 4px 6px;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .pastki-item {
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 6px 14px;
-    border-radius: var(--radius-pill);
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 2px;
+    border-radius: 14px;
     color: var(--text-muted);
-    font-size: 0.68rem;
+    font-size: 0.67rem;
     font-weight: 600;
     text-decoration: none;
-    transition: all var(--trans-fast);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .pastki-item svg {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    stroke-width: 2.1;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pastki-item span {
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.1;
   }
   .pastki-item.faol {
     color: var(--apple-blue);
     background: var(--apple-blue-tint);
   }
+  .pastki-item.faol svg {
+    transform: scale(1.08);
+  }
+  .pastki-item:active {
+    transform: scale(0.94);
+  }
 }
 
 @media (max-width: 480px) {
+  .site-header {
+    top: 6px;
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    margin: 6px auto 0;
+  }
+  .header-inner {
+    padding: 5px 8px;
+    gap: 6px;
+  }
+  .brand {
+    gap: 6px;
+  }
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+  .brand-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+  .brand-text {
+    font-size: 1.05rem;
+  }
+  .segmented-control {
+    padding: 2px;
+    gap: 1px;
+  }
+  .segment {
+    padding: 3px 6px;
+    font-size: 0.68rem;
+  }
+  .btn-auth-login {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
   .hero-search-box {
     flex-direction: column;
     padding: 10px;
@@ -2105,10 +2248,38 @@ a:hover {
   }
   .card-main {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
   .avatar-img, .avatar-fallback {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .site-header {
+    width: calc(100% - 10px);
+    max-width: calc(100% - 10px);
+    margin: 4px auto 0;
+  }
+  .header-inner {
+    padding: 4px 6px;
+  }
+  .brand-text {
+    font-size: 0.95rem;
+  }
+  .pastki {
+    width: calc(100% - 12px);
+    padding: 3px 3px;
+  }
+  .pastki-item span {
+    font-size: 0.61rem;
+  }
+  .pastki-item svg {
+    width: 17px;
+    height: 17px;
   }
 }
 

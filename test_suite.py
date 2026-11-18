@@ -34,6 +34,110 @@ class RepetitorDeepAudit(unittest.TestCase):
             print(f"  {u:25} -> {res.status_code}")
             self.assertEqual(res.status_code, 200, f"Broken link in template: {u}")
 
+    def test_password_recovery_flow(self):
+        """Test complete password recovery (Step 1, Step 2 verification, and password update)."""
+        login = 'test_reset_user'
+        parol_orig = 'OriginalPass123'
+        savol = 'Sevimli kitobingiz?'
+        javob = 'Alkimyogar'
+
+        # Cleanup before test
+        con = db()
+        con.execute('DELETE FROM urinishlar WHERE kalit LIKE ?', ('%' + login + '%',))
+        con.execute('DELETE FROM users WHERE login = ?', (login,))
+        con.commit()
+        con.close()
+
+        def get_csrf():
+            self.client.get('/royxat')
+            with self.client.session_transaction() as sess:
+                return sess.get('csrf', '')
+
+        csrf = get_csrf()
+
+        # 1. Register test user with security question
+        r = self.client.post('/royxat', data={
+            'ism': 'Tiklash Sinov',
+            'login': login,
+            'parol': parol_orig,
+            'maxfiy_savol': savol,
+            'maxfiy_javob': javob,
+            'telefon': '+998901112233',
+            'csrf': csrf
+        }, follow_redirects=True)
+        self.assertEqual(r.status_code, 200)
+
+        # Refresh CSRF after login/session update
+        csrf = get_csrf()
+
+        # 2. Test Step 1: non-existent login
+        r = self.client.post('/tiklash', data={
+            'login': 'mavjud_bolmagan_user_99',
+            'action': 'find',
+            'csrf': csrf
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('topilmadi', r.get_data(as_text=True))
+
+        csrf = get_csrf()
+
+        # 3. Test Step 1: existing login
+        r = self.client.post('/tiklash', data={
+            'login': login,
+            'action': 'find',
+            'csrf': csrf
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Tiklash Sinov', r.get_data(as_text=True))
+        self.assertIn(savol, r.get_data(as_text=True))
+
+        csrf = get_csrf()
+
+        # 4. Test Step 2: incorrect answer
+        r = self.client.post('/tiklash', data={
+            'login': login,
+            'action': 'reset',
+            'javob': 'Xato Javob',
+            'yangi_parol': 'YangiParol2026',
+            'yangi_parol2': 'YangiParol2026',
+            'csrf': csrf
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('noto', r.get_data(as_text=True).lower())
+
+        csrf = get_csrf()
+
+        # 5. Test Step 2: correct answer & update password
+        yangi_parol_valid = 'YangiParol2026!'
+        r = self.client.post('/tiklash', data={
+            'login': login,
+            'action': 'reset',
+            'javob': javob,
+            'yangi_parol': yangi_parol_valid,
+            'yangi_parol2': yangi_parol_valid,
+            'csrf': csrf
+        }, follow_redirects=True)
+        self.assertEqual(r.status_code, 200)
+
+        # 6. Test logging in with new password
+        self.client.get('/chiqish')
+        csrf = get_csrf()
+        r = self.client.post('/kirish', data={
+            'login': login,
+            'parol': yangi_parol_valid,
+            'csrf': csrf
+        }, follow_redirects=True)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Tiklash Sinov', r.get_data(as_text=True))
+
+        # Cleanup
+        con = db()
+        con.execute('DELETE FROM urinishlar WHERE kalit LIKE ?', ('%' + login + '%',))
+        con.execute('DELETE FROM users WHERE login = ?', (login,))
+        con.commit()
+        con.close()
+        print("\n  ✓ Password recovery flow verified end-to-end!")
+
     def test_all_templates_render_cleanly(self):
         """Test rendering of all templates with mock context to catch Jinja undefined/filter bugs."""
         templates = glob.glob('templates/*.html')

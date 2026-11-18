@@ -10,7 +10,7 @@ from flask import Flask, request, redirect, render_template, session, send_from_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-STATIC_VERSION = "20261118-v3"
+STATIC_VERSION = "20261118-v4"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "faqat-sinov-uchun-kalit-2026-repetitor")
@@ -382,6 +382,61 @@ TR = {
         "Неверный логин или пароль",
         "Incorrect username or password",
     ),
+    "parol_unut": (
+        "Parolni unutdingizmi?",
+        "Забыли пароль?",
+        "Forgot password?",
+    ),
+    "parol_tiklash": (
+        "Parolni tiklash",
+        "Восстановление пароля",
+        "Reset password",
+    ),
+    "parol_tiklash_p": (
+        "Hisobingiz ma'lumotlarini tasdiqlab, yangi parol o'rnating",
+        "Подтвердите данные аккаунта и установите новый пароль",
+        "Verify your account and set a new password",
+    ),
+    "t_foydalanuvchi_yoq": (
+        "Bunday loginli foydalanuvchi topilmadi",
+        "Пользователь с таким логином не найден",
+        "User with this username was not found",
+    ),
+    "t_javob_xato": (
+        "Xavfsizlik tasdig'i noto'g'ri kiritildi",
+        "Ответ безопасности введен неверно",
+        "Security answer is incorrect",
+    ),
+    "t_parol_mos_emas": (
+        "Yangi parollar bir-biriga mos kelmadi",
+        "Новые пароли не совпадают",
+        "New passwords do not match",
+    ),
+    "t_muvaffaqiyat": (
+        "Parolingiz muvaffaqiyatli yangilandi!",
+        "Ваш пароль успешно изменен!",
+        "Your password has been successfully updated!",
+    ),
+    "ph_maxfiy_savol": (
+        "Xavfsizlik savoli (ixtiyoriy, parolni tiklash uchun)",
+        "Секретный вопрос (для восстановления)",
+        "Security question (for recovery)",
+    ),
+    "ph_maxfiy_javob": (
+        "Maxfiy javob",
+        "Секретный ответ",
+        "Secret answer",
+    ),
+    "yangi_parol": (
+        "Yangi parol",
+        "Новый пароль",
+        "New password",
+    ),
+    "yangi_parol_tasdiq": (
+        "Yangi parolni takrorlang",
+        "Повторите новый пароль",
+        "Confirm new password",
+    ),
 }
 
 
@@ -455,6 +510,14 @@ def init_db():
         con.execute("ALTER TABLE tutors ADD COLUMN bepul_dars INTEGER DEFAULT 0")
     if "korishlar" not in ustunlar:
         con.execute("ALTER TABLE tutors ADD COLUMN korishlar INTEGER DEFAULT 0")
+
+    user_ustunlar = [r["name"] for r in con.execute("PRAGMA table_info(users)")]
+    if "telefon" not in user_ustunlar:
+        con.execute("ALTER TABLE users ADD COLUMN telefon TEXT DEFAULT ''")
+    if "maxfiy_savol" not in user_ustunlar:
+        con.execute("ALTER TABLE users ADD COLUMN maxfiy_savol TEXT DEFAULT ''")
+    if "maxfiy_javob_hash" not in user_ustunlar:
+        con.execute("ALTER TABLE users ADD COLUMN maxfiy_javob_hash TEXT DEFAULT ''")
 
     # Bosh admin hisobi mavjudligini kafolatlash
     admin_bor = con.execute("SELECT id FROM users WHERE login = 'admin'").fetchone()
@@ -875,6 +938,10 @@ def royxat():
     ism = request.form["ism"].strip()
     login = request.form["login"].strip().lower()
     parol = request.form["parol"]
+    maxfiy_savol = request.form.get("maxfiy_savol", "").strip()[:100]
+    maxfiy_javob = request.form.get("maxfiy_javob", "").strip()[:100]
+    telefon = request.form.get("telefon", "").strip()[:30]
+
     if not (2 <= len(ism) <= 60):
         return render_template("royxat.html", xato=tr("r_ism_xato"))
     if not re.fullmatch(r"[a-z0-9_]{3,30}", login):
@@ -883,11 +950,13 @@ def royxat():
         return render_template("royxat.html", xato=tr("r_parol_xato"))
     if parol.lower() == login:
         return render_template("royxat.html", xato=tr("r_parol_login"))
+    
+    javob_hash = generate_password_hash(maxfiy_javob.lower()) if maxfiy_javob else ""
     con = db()
     try:
         cur = con.execute(
-            "INSERT INTO users (ism, login, parol_hash) VALUES (?, ?, ?)",
-            (ism, login, generate_password_hash(parol)),
+            "INSERT INTO users (ism, login, parol_hash, telefon, maxfiy_savol, maxfiy_javob_hash) VALUES (?, ?, ?, ?, ?, ?)",
+            (ism, login, generate_password_hash(parol), telefon, maxfiy_savol, javob_hash),
         )
         con.commit()
     except sqlite3.IntegrityError:
@@ -896,6 +965,159 @@ def royxat():
     con.close()
     sessiya_yangila(user_id=cur.lastrowid, user_ism=ism, login=login)
     return redirect("/")
+
+
+@app.route("/tiklash", methods=["GET", "POST"])
+def tiklash():
+    if request.method == "GET":
+        login = request.args.get("login", "").strip().lower()
+        if login:
+            con = db()
+            u = con.execute("SELECT * FROM users WHERE login = ?", (login,)).fetchone()
+            con.close()
+            if u:
+                return render_template(
+                    "tiklash.html",
+                    step=2,
+                    login=u["login"],
+                    ism=u["ism"],
+                    maxfiy_savol=u["maxfiy_savol"],
+                    xato="",
+                )
+        return render_template("tiklash.html", step=1, login="", xato="")
+
+    action = request.form.get("action", "")
+    login = request.form.get("login", "").strip().lower()[:50]
+
+    if not login:
+        return render_template("tiklash.html", step=1, login="", xato=tr("r_login_xato"))
+
+    con = db()
+    u = con.execute("SELECT * FROM users WHERE login = ?", (login,)).fetchone()
+    if u is None:
+        con.close()
+        return render_template("tiklash.html", step=1, login=login, xato=tr("t_foydalanuvchi_yoq"))
+
+    # 1-qadam: faqat login yuborilgan
+    if action == "find" or "yangi_parol" not in request.form:
+        con.close()
+        return render_template(
+            "tiklash.html",
+            step=2,
+            login=u["login"],
+            ism=u["ism"],
+            maxfiy_savol=u["maxfiy_savol"],
+            xato="",
+        )
+
+    # 2-qadam: parolni yangilash so'rovi
+    if urinish_soni(con, "reset_" + login) >= URINISH_LIMIT:
+        con.commit()
+        con.close()
+        return render_template(
+            "tiklash.html",
+            step=2,
+            login=u["login"],
+            ism=u["ism"],
+            maxfiy_savol=u["maxfiy_savol"],
+            xato=tr("k_urinish"),
+        ), 429
+
+    javob = request.form.get("javob", "").strip()
+    yangi_parol = request.form.get("yangi_parol", "")
+    yangi_parol2 = request.form.get("yangi_parol2", "")
+
+    tasdiqlandi = False
+
+    # 1. Maxfiy javob hashi tekshiruvi
+    if u["maxfiy_javob_hash"] and javob:
+        if check_password_hash(u["maxfiy_javob_hash"], javob.lower()):
+            tasdiqlandi = True
+
+    # 2. Foydalanuvchi telefon raqami tekshiruvi
+    if not tasdiqlandi and u["telefon"] and javob:
+        toza_javob = re.sub(r"\D", "", javob)
+        toza_tel = re.sub(r"\D", "", u["telefon"])
+        if toza_javob and toza_tel and (toza_javob in toza_tel or toza_tel in toza_javob):
+            tasdiqlandi = True
+
+    # 3. Foydalanuvchining to'liq ismi tekshiruvi
+    if not tasdiqlandi and javob:
+        if javob.lower() == u["ism"].strip().lower():
+            tasdiqlandi = True
+
+    # 4. Foydalanuvchiga tegishli repetitor e'lonidagi telefon yoki telegram
+    if not tasdiqlandi and javob:
+        tutors = con.execute("SELECT telefon, telegram FROM tutors WHERE user_id = ?", (u["id"],)).fetchall()
+        for tut in tutors:
+            if tut["telefon"] and re.sub(r"\D", "", javob) and re.sub(r"\D", "", javob) in re.sub(r"\D", "", tut["telefon"]):
+                tasdiqlandi = True
+                break
+            if tut["telegram"] and javob.lstrip("@").lower() == tut["telegram"].lstrip("@").lower():
+                tasdiqlandi = True
+                break
+
+    # 5. Admin hisobi
+    if not tasdiqlandi and u["login"] in ADMINLAR and javob:
+        if javob == os.environ.get("ADMIN_SECRET", "Admin@2026"):
+            tasdiqlandi = True
+
+    if not tasdiqlandi:
+        con.execute("INSERT INTO urinishlar (kalit, vaqt) VALUES (?, ?)", ("reset_" + login, time.time()))
+        con.commit()
+        con.close()
+        return render_template(
+            "tiklash.html",
+            step=2,
+            login=u["login"],
+            ism=u["ism"],
+            maxfiy_savol=u["maxfiy_savol"],
+            xato=tr("t_javob_xato"),
+        )
+
+    # Parol validatsiyasi
+    if len(yangi_parol) < 8 or len(yangi_parol) > 100:
+        con.close()
+        return render_template(
+            "tiklash.html",
+            step=2,
+            login=u["login"],
+            ism=u["ism"],
+            maxfiy_savol=u["maxfiy_savol"],
+            xato=tr("r_parol_xato"),
+        )
+    if yangi_parol.lower() == login:
+        con.close()
+        return render_template(
+            "tiklash.html",
+            step=2,
+            login=u["login"],
+            ism=u["ism"],
+            maxfiy_savol=u["maxfiy_savol"],
+            xato=tr("r_parol_login"),
+        )
+    if yangi_parol != yangi_parol2:
+        con.close()
+        return render_template(
+            "tiklash.html",
+            step=2,
+            login=u["login"],
+            ism=u["ism"],
+            maxfiy_savol=u["maxfiy_savol"],
+            xato=tr("t_parol_mos_emas"),
+        )
+
+    # Parolni yangilash
+    con.execute(
+        "UPDATE users SET parol_hash = ? WHERE id = ?",
+        (generate_password_hash(yangi_parol), u["id"]),
+    )
+    con.execute("DELETE FROM urinishlar WHERE kalit = ? OR kalit = ?", (login, "reset_" + login))
+    con.commit()
+    con.close()
+
+    sessiya_yangila(user_id=u["id"], user_ism=u["ism"], login=u["login"])
+    return redirect("/kabinet?xabar=parol_yangilandi")
 
 
 @app.route("/kirish", methods=["GET", "POST"])

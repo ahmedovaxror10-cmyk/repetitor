@@ -32,6 +32,11 @@
         <input id="r_parol" name="parol" type="password" class="input-standard" placeholder="{{ tr('ph_parol_royxat') }}" minlength="8" maxlength="100" required autocomplete="new-password">
       </div>
 
+      <div class="form-group">
+        <label class="form-label" for="telefon">Telefon raqam <span class="text-subtle-hint">(ixtiyoriy, parolni tiklash uchun)</span></label>
+        <input id="telefon" name="telefon" type="tel" class="input-standard" placeholder="+998 90 123 45 67" maxlength="30" autocomplete="tel">
+      </div>
+
       <button type="submit" class="btn-primary btn-block">{{ tr('royxat') }}</button>
     </form>
 

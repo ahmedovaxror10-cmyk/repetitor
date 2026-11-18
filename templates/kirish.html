@@ -12,6 +12,10 @@
       <p class="auth-subtitle">{{ tr('kirish_p') }}</p>
     </div>
 
+    {% if request.args.get('xabar') == 'parol_yangilandi' %}
+      <div class="alert-success">{{ tr('t_muvaffaqiyat') }}</div>
+    {% endif %}
+
     {% if xato %}
       <div class="alert-danger">{{ xato }}</div>
     {% endif %}
@@ -19,11 +23,14 @@
     <form method="post" class="auth-form">
       <div class="form-group">
         <label class="form-label" for="login">{{ tr('ph_login') }}</label>
-        <input id="login" name="login" class="input-standard" placeholder="{{ tr('ph_login') }}" required autocomplete="username">
+        <input id="login" name="login" class="input-standard" value="{{ login|default('') }}" placeholder="{{ tr('ph_login') }}" required autocomplete="username">
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="parol">{{ tr('ph_parol') }}</label>
+        <div class="label-with-link">
+          <label class="form-label" for="parol">{{ tr('ph_parol') }}</label>
+          <a href="/tiklash" class="link-subtle">{{ tr('parol_unut') }}</a>
+        </div>
         <input id="parol" name="parol" type="password" class="input-standard" placeholder="{{ tr('ph_parol') }}" required autocomplete="current-password">
       </div>
 

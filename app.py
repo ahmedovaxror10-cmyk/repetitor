@@ -527,18 +527,6 @@ def init_db():
             ("Bosh Admin", "admin", generate_password_hash("Admin@2026")),
         )
 
-    if con.execute("SELECT COUNT(*) FROM tutors").fetchone()[0] == 0:
-        con.executemany(
-            "INSERT INTO tutors (ism, fan, shahar, narx, tavsif) VALUES (?, ?, ?, ?, ?)",
-            [
-                ("Dilnoza Karimova", "Matematika", "Toshkent", 90000,
-                 "Maktab va DTM tayyorgarligi. Murakkab mavzularni oddiy misollar bilan tushuntiraman."),
-                ("Jasur Rahimov", "IELTS", "Samarqand", 120000,
-                 "IELTS 8.0. Speaking va Writing bo'yicha har darsda shaxsiy fikr-mulohaza beraman."),
-                ("Otabek Ismoilov", "Dasturlash", "Toshkent", 150000,
-                 "Python va veb dasturlash noldan. Har oy bitta real loyiha qilamiz."),
-            ],
-        )
     con.commit()
     con.close()
 

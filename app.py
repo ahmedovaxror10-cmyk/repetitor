@@ -71,18 +71,19 @@ def sync_db_from_blob(force=False):
 
     try:
         req = urllib.request.Request(
-            "https://blob.vercel-storage.com?prefix=data/repetitor.db",
+            "https://blob.vercel-storage.com?prefix=data/repetitor",
             headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
         )
-        with urllib.request.urlopen(req, timeout=3) as resp:
+        with urllib.request.urlopen(req, timeout=4) as resp:
             data = json.loads(resp.read().decode())
             blobs = data.get("blobs", [])
-            db_blobs = [b for b in blobs if b["pathname"] == "data/repetitor.db"]
+            db_blobs = [b for b in blobs if b.get("pathname") == "data/repetitor.db"]
             if db_blobs:
+                db_blobs.sort(key=lambda b: b.get("uploadedAt", ""), reverse=True)
                 newest = db_blobs[0]
                 if newest["url"] != _last_blob_url or not os.path.exists(DB):
                     req_dl = urllib.request.Request(newest["url"], headers={"User-Agent": "Mozilla/5.0"})
-                    with urllib.request.urlopen(req_dl, timeout=4) as dl_resp:
+                    with urllib.request.urlopen(req_dl, timeout=5) as dl_resp:
                         content = dl_resp.read()
                         with open(DB, "wb") as f:
                             f.write(content)
@@ -109,20 +110,21 @@ def sync_db_to_blob():
             headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
             method="PUT",
         )
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=6) as resp:
             res = json.loads(resp.read().decode())
             _last_blob_url = res.get("url")
 
         # Clean up older blobs if list grows
         try:
             req_l = urllib.request.Request(
-                "https://blob.vercel-storage.com?prefix=data/repetitor.db",
+                "https://blob.vercel-storage.com?prefix=data/repetitor",
                 headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
             )
-            with urllib.request.urlopen(req_l, timeout=3) as l_resp:
+            with urllib.request.urlopen(req_l, timeout=4) as l_resp:
                 blobs = json.loads(l_resp.read().decode()).get("blobs", [])
-                db_blobs = [b for b in blobs if b["pathname"] == "data/repetitor.db"]
+                db_blobs = [b for b in blobs if b.get("pathname") == "data/repetitor.db"]
                 if len(db_blobs) > 2:
+                    db_blobs.sort(key=lambda b: b.get("uploadedAt", ""), reverse=True)
                     old_urls = [b["url"] for b in db_blobs[2:]]
                     req_del = urllib.request.Request(
                         "https://blob.vercel-storage.com/delete",
@@ -130,7 +132,7 @@ def sync_db_to_blob():
                         headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7", "Content-Type": "application/json"},
                         method="POST",
                     )
-                    urllib.request.urlopen(req_del, timeout=3)
+                    urllib.request.urlopen(req_del, timeout=4)
         except Exception:
             pass
     except Exception as e:

@@ -2133,6 +2133,43 @@ a:hover {
     box-sizing: border-box;
   }
 
+  /* Prevent auto-zoom on iOS inputs & selects */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Smooth scrollable category chips rail on mobile */
+  .quick-category-chips {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    justify-content: flex-start !important;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    max-width: 100%;
+  }
+  .quick-category-chips::-webkit-scrollbar {
+    display: none;
+  }
+  .quick-category-chips .chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Admin tabs & table responsiveness */
+  .admin-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .admin-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .apple-table {
+    min-width: 520px;
+  }
+
   .hero-features-grid {
     grid-template-columns: 1fr;
     gap: 12px;

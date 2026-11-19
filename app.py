@@ -1,12 +1,15 @@
 import functools
+import json
 import os
 import re
 import secrets
 import shutil
 import sqlite3
 import time
+import urllib.parse
+import urllib.request
 import uuid
-from flask import Flask, request, redirect, render_template, session, send_from_directory
+from flask import Flask, request, redirect, render_template, session, send_from_directory, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -19,15 +22,22 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("PRODUCTION") == "1"
 
+BLOB_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
+if not BLOB_TOKEN:
+    _env_local = os.path.join(BASE, ".env.local")
+    if os.path.exists(_env_local):
+        try:
+            with open(_env_local, "r", encoding="utf-8") as _f:
+                for _l in _f:
+                    if _l.startswith("BLOB_READ_WRITE_TOKEN="):
+                        BLOB_TOKEN = _l.split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+        except Exception:
+            pass
+
 if os.environ.get("VERCEL"):
     DB = "/tmp/repetitor.db"
     src_db = os.path.join(BASE, "repetitor.db")
-    if os.path.exists(src_db) and not os.path.exists(DB):
-        try:
-            shutil.copy2(src_db, DB)
-        except Exception as e:
-            print("DB copy error:", e)
-
     UPLOAD = "/tmp/uploads"
     os.makedirs(UPLOAD, exist_ok=True)
     src_uploads = os.path.join(BASE, "static", "uploads")
@@ -42,12 +52,135 @@ if os.environ.get("VERCEL"):
                     pass
 else:
     DB = os.path.join(BASE, "repetitor.db")
+    src_db = DB
     UPLOAD = os.path.join(BASE, "static", "uploads")
     os.makedirs(UPLOAD, exist_ok=True)
+
+_last_blob_url = None
+_last_sync_check = 0
+
+
+def sync_db_from_blob(force=False):
+    global _last_blob_url, _last_sync_check
+    if not BLOB_TOKEN:
+        return
+    now = time.time()
+    if not force and os.path.exists(DB) and (now - _last_sync_check < 2):
+        return
+    _last_sync_check = now
+
+    try:
+        req = urllib.request.Request(
+            "https://blob.vercel-storage.com?prefix=data/repetitor.db",
+            headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
+        )
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            blobs = data.get("blobs", [])
+            db_blobs = [b for b in blobs if b["pathname"] == "data/repetitor.db"]
+            if db_blobs:
+                newest = db_blobs[0]
+                if newest["url"] != _last_blob_url or not os.path.exists(DB):
+                    req_dl = urllib.request.Request(newest["url"], headers={"User-Agent": "Mozilla/5.0"})
+                    with urllib.request.urlopen(req_dl, timeout=4) as dl_resp:
+                        content = dl_resp.read()
+                        with open(DB, "wb") as f:
+                            f.write(content)
+                        _last_blob_url = newest["url"]
+            elif not os.path.exists(DB) and os.path.exists(src_db):
+                shutil.copy2(src_db, DB)
+                sync_db_to_blob()
+    except Exception as e:
+        print("sync_db_from_blob error:", e)
+
+
+def sync_db_to_blob():
+    global _last_blob_url
+    if not BLOB_TOKEN:
+        return
+    try:
+        if not os.path.exists(DB):
+            return
+        with open(DB, "rb") as f:
+            data = f.read()
+        req = urllib.request.Request(
+            "https://blob.vercel-storage.com/data/repetitor.db",
+            data=data,
+            headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
+            method="PUT",
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            res = json.loads(resp.read().decode())
+            _last_blob_url = res.get("url")
+
+        # Clean up older blobs if list grows
+        try:
+            req_l = urllib.request.Request(
+                "https://blob.vercel-storage.com?prefix=data/repetitor.db",
+                headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
+            )
+            with urllib.request.urlopen(req_l, timeout=3) as l_resp:
+                blobs = json.loads(l_resp.read().decode()).get("blobs", [])
+                db_blobs = [b for b in blobs if b["pathname"] == "data/repetitor.db"]
+                if len(db_blobs) > 2:
+                    old_urls = [b["url"] for b in db_blobs[2:]]
+                    req_del = urllib.request.Request(
+                        "https://blob.vercel-storage.com/delete",
+                        data=json.dumps({"urls": old_urls}).encode("utf-8"),
+                        headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7", "Content-Type": "application/json"},
+                        method="POST",
+                    )
+                    urllib.request.urlopen(req_del, timeout=3)
+        except Exception:
+            pass
+    except Exception as e:
+        print("sync_db_to_blob error:", e)
+
+
+def sync_upload_to_blob(local_path, filename):
+    if not BLOB_TOKEN or not os.path.exists(local_path):
+        return
+    try:
+        with open(local_path, "rb") as f:
+            data = f.read()
+        req = urllib.request.Request(
+            f"https://blob.vercel-storage.com/uploads/{urllib.parse.quote(filename)}",
+            data=data,
+            headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
+            method="PUT",
+        )
+        urllib.request.urlopen(req, timeout=5)
+    except Exception as e:
+        print("sync_upload_to_blob error:", e)
+
+
+@app.before_request
+def har_bir_sorov_boshi():
+    if not request.path.startswith("/static/"):
+        if os.environ.get("VERCEL"):
+            sync_db_from_blob()
 
 
 @app.route("/static/uploads/<path:filename>")
 def serve_uploads(filename):
+    fayl_yoli = os.path.join(UPLOAD, filename)
+    if not os.path.exists(fayl_yoli) and BLOB_TOKEN:
+        try:
+            req = urllib.request.Request(
+                f"https://blob.vercel-storage.com?prefix=uploads/{urllib.parse.quote(filename)}",
+                headers={"Authorization": f"Bearer {BLOB_TOKEN}", "x-api-version": "7"},
+            )
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = json.loads(resp.read().decode())
+                blobs = data.get("blobs", [])
+                if blobs:
+                    blob_url = blobs[0]["url"]
+                    req_dl = urllib.request.Request(blob_url, headers={"User-Agent": "Mozilla/5.0"})
+                    with urllib.request.urlopen(req_dl, timeout=5) as dl_resp:
+                        with open(fayl_yoli, "wb") as f:
+                            f.write(dl_resp.read())
+        except Exception as e:
+            print("serve_uploads sync error:", e)
     return send_from_directory(UPLOAD, filename)
 
 ADMINLAR = {
@@ -589,7 +722,9 @@ def rasm_saqlash(fayl):
     else:
         return None
     nom = uuid.uuid4().hex + "." + kengaytma
-    fayl.save(os.path.join(UPLOAD, nom))
+    dst = os.path.join(UPLOAD, nom)
+    fayl.save(dst)
+    sync_upload_to_blob(dst, nom)
     return nom
 
 
@@ -841,6 +976,7 @@ def sharh_yoz(tid):
     )
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/repetitor/" + str(tid) + "#sharhlar")
 
 
@@ -862,6 +998,7 @@ def sharh_ochir(sid):
     con.execute("DELETE FROM sharhlar WHERE id = ?", (sid,))
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/repetitor/" + str(s["tutor_id"]) + "#sharhlar")
 
 
@@ -916,6 +1053,7 @@ def qosh():
     )
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/kabinet")
 
 
@@ -951,6 +1089,7 @@ def royxat():
         con.close()
         return render_template("royxat.html", xato=tr("r_login_band"))
     con.close()
+    sync_db_to_blob()
     sessiya_yangila(user_id=cur.lastrowid, user_ism=ism, login=login)
     return redirect("/")
 
@@ -1103,6 +1242,7 @@ def tiklash():
     con.execute("DELETE FROM urinishlar WHERE kalit = ? OR kalit = ?", (login, "reset_" + login))
     con.commit()
     con.close()
+    sync_db_to_blob()
 
     sessiya_yangila(user_id=u["id"], user_ism=u["ism"], login=u["login"])
     return redirect("/kabinet?xabar=parol_yangilandi")
@@ -1232,6 +1372,7 @@ def tahrir(tid):
         )
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/repetitor/" + str(tid))
 
 
@@ -1250,6 +1391,7 @@ def ochir(tid):
         elon_ochirish(con, tid)
         con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/kabinet")
 
 
@@ -1291,6 +1433,7 @@ def admin_elon_ochir(tid):
     elon_ochirish(con, tid)
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/admin?xabar=E'lon o'chirildi")
 
 
@@ -1301,6 +1444,7 @@ def admin_sharh_ochir(sid):
     con.execute("DELETE FROM sharhlar WHERE id = ?", (sid,))
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/admin?xabar=Sharh o'chirildi")
 
 
@@ -1321,6 +1465,7 @@ def admin_user_ochir(uid):
     con.execute("DELETE FROM users WHERE id = ?", (uid,))
     con.commit()
     con.close()
+    sync_db_to_blob()
     return redirect("/admin?xabar=Foydalanuvchi va uning e'lonlari o'chirildi")
 
 
